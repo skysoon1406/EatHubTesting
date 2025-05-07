@@ -13,3 +13,6 @@ python manage.py runserver
 - 張凱迪（Team Lead） [Github](https://github.com/kdchang)
 - 呂亭霈 (Ting Lu) [Github](https://github.com/Ting-gif)
 - 劉添順 [Github](https://github.com/skysoon1406)
+
+
+- 謝旻澔[GitHub](https://github.com/qWer79790922)
