@@ -11,3 +11,4 @@ python manage.py runserver
 ## Contributor 專案開發團隊
 
 - 張凱迪（Team Lead） [Github](https://github.com/kdchang)
+- 呂亭霈 (Ting Lu) [Github](https://github.com/Ting-gif)
