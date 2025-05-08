@@ -14,7 +14,7 @@ class User(models.Model):
 # 使用者酷碰卷
 class UserCoupon(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE, related_name='coupons') #使用者FK
-    coupon = models.ForeignKey('Coupon', on_delete=models.CASCADE, related_name='claimed_by') #酷碰FK
+    coupon = models.ForeignKey('promotions.Coupon', on_delete=models.CASCADE, related_name='claimed_by') #酷碰FK
     claimed_at = models.DateTimeField(auto_now_add=True)  # 預設為領取時自動填入
     used_at = models.DateTimeField(blank=True, null=True)  # 使用時再更新
     is_used = models.BooleanField(default=False) #是否使用
