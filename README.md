@@ -14,5 +14,5 @@ python manage.py runserver
 - 呂亭霈 (Ting Lu) [Github](https://github.com/Ting-gif)
 - 劉添順 [Github](https://github.com/skysoon1406)
 
-
+- 梁雅絜[GitHub](https://github.com/comea22)
 - 謝旻澔[GitHub](https://github.com/qWer79790922)
