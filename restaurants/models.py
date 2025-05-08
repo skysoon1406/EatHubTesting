@@ -8,10 +8,9 @@ class Restaurant(models.Model):
     latitude = models.FloatField()  # 緯度
     longitude = models.FloatField()  # 經度
     phone = models.CharField(max_length=255, blank=True, null=True)  # 聯絡電話，可空
-    open_hours = models.CharField(max_length=255, blank=True, null=True)  # 營業時間，可空
+    open_hours = models.TextField(blank=True, null=True)  # 營業時間，可空
     created_at = models.DateTimeField(auto_now_add=True)  # 建立時間，自動填入
     google_rating = models.FloatField(
-        default=3.5,
         validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
         blank=True,
         null=True
@@ -27,7 +26,7 @@ class Restaurant(models.Model):
 class Review(models.Model):
     user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='reviews')  # 對應評論者FK
     restaurant = models.ForeignKey('Restaurant', on_delete=models.CASCADE, related_name='reviews')  # 被評論餐廳FK
-    rating = models.FloatField(
+    rating = models.IntegerField(
         validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
         blank=True,
         null=True
