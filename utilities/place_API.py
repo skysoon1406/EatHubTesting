@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 import os
 
 def text_search(keyword, location, radius):
-    API_KEY = os.getenv('Google_API_KEY')
+    load_dotenv()
+    API_KEY = os.getenv('GOOGLE_API_KEY')
     query = keyword
     language = 'zh-TW'
     type = 'food'
