@@ -3,12 +3,14 @@ import time
 from dotenv import load_dotenv
 import os
 
+GOOGLE_MAP_API_BASE_URL = 'https://maps.googleapis.com/maps/api/place'
+
 def text_search(keyword, location, radius, count=61):
     load_dotenv()
     API_KEY = os.getenv('GOOGLE_API_KEY')
     query = keyword
     language = 'zh-TW'
-    url = f'https://maps.googleapis.com/maps/api/place/textsearch/json?query={query}&location={location}&radius={radius}&language={language}&key={API_KEY}'
+    url = f'{GOOGLE_MAP_API_BASE_URL}/textsearch/json?query={query}&location={location}&radius={radius}&language={language}&key={API_KEY}'
 
     result = []
 
@@ -37,7 +39,7 @@ def text_search(keyword, location, radius, count=61):
 
         if next_page_token:
             time.sleep(3)
-            url = f'https://maps.googleapis.com/maps/api/place/textsearch/json?pagetoken={next_page_token}&key={API_KEY}'
+            url = f'{GOOGLE_MAP_API_BASE_URL}/textsearch/json?pagetoken={next_page_token}&key={API_KEY}'
         else:
             break
 
