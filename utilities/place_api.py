@@ -23,11 +23,11 @@ def text_search(keyword, location, radius, count=61):
             result.append({
             'name': place.get('name'),
             'address': place.get('formatted_address'),
-            'google_rating': place.get('rating'),
+            'rating': place.get('rating'),
             'latitude': place['geometry']['location']['lat'],
             'longitude': place['geometry']['location']['lng'],
             'types': place.get('types', []),
-            'place_id': place.get('place_id'),
+            'placeId': place.get('place_id'),
             })
 
             if len(result) >= count:
