@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'users',
     'restaurants',
     'promotions',
-    'merchants',
 ]
 
 MIDDLEWARE = [
