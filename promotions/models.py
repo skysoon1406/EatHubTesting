@@ -7,6 +7,7 @@ class Promotion(models.Model):
     description = models.TextField(blank=True, null=True)  # 活動描述，可空
     started_at = models.DateTimeField(blank=True, null=True)  # 開始時間，可空
     ended_at = models.DateTimeField(blank=True, null=True)  # 結束時間，可空
+    is_archived = models.BooleanField(default=False)  # 是否封存，預設 False
     img_url = models.URLField(max_length=255, blank=True, null=True)  # 活動圖片網址，可空
     restaurant = models.ForeignKey(
         'restaurants.Restaurant',
@@ -29,8 +30,8 @@ class Coupon(models.Model):
     title = models.CharField(max_length=255)  # 優惠券標題
     description = models.TextField(blank=True, null=True)  # 說明文字，可空
     discount_type = models.CharField(max_length=255)  # 折扣類型（例：金額、百分比）
-    discount_value = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)  # 折扣值，可空
-    total = models.IntegerField(blank=True, null=True)  # 發行總數，可空
+    discount_value = models.PositiveIntegerField(blank=True, null=True)  # 折扣值，可空
+    total = models.PositiveIntegerField(blank=True, null=True)  # 發行總數，可空
     is_archived = models.BooleanField(default=False)  # 是否封存，預設 False
     started_at = models.DateTimeField(blank=True, null=True)  # 開始時間，可空
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # uuid

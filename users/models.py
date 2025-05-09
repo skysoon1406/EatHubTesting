@@ -18,7 +18,7 @@ class User(models.Model):
         'restaurants.Restaurant',
         on_delete=models.SET_NULL,
         blank=True, null=True,
-        related_name='merchant_users',
+        related_name='merchant_user',
         )  # 綁定餐廳，可空
 
     def __str__(self):
