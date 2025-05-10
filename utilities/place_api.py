@@ -20,19 +20,19 @@ def text_search(keyword, location, radius,count=20):
         if data.get('status') != 'OK':
             break
 
-            for place in data.get('results', []):
-                result.append({
-                'name': place.get('name'),
-                'address': place.get('formatted_address'),
-                'rating': place.get('rating'),
-                'latitude': place['geometry']['location']['lat'],
-                'longitude': place['geometry']['location']['lng'],
-                'types': place.get('types', []),
-                'placeId': place.get('place_id'),
-                })
+        for place in data.get('results', []):
+            result.append({
+            'name': place.get('name'),
+            'address': place.get('formatted_address'),
+            'rating': place.get('rating'),
+            'latitude': place['geometry']['location']['lat'],
+            'longitude': place['geometry']['location']['lng'],
+            'types': place.get('types', []),
+            'placeId': place.get('place_id'),
+            })
 
-                if len(result) >= count:
-                    return result
+            if len(result) >= count:
+                return result
 
         next_page_token = data.get('next_page_token')
 

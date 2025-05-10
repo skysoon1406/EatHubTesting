@@ -21,5 +21,5 @@ from restaurants.views import RestaurantSearchView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/restaurants/search/', RestaurantSearchView.as_view(), name='restaurant-search'),
+    path('api/v1/restaurants/', include('restaurants.urls')),
 ]
