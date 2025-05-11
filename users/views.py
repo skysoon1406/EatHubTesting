@@ -6,6 +6,7 @@ from django.core.cache import cache
 import uuid
 from .models import User
 from .serializers import SignupSerializer, LoginSerializer
+from .utils import token_required
 
 # Create your views here.
 
@@ -51,3 +52,15 @@ class LoginView(APIView):
                     {"error": "使用者不存在"}, status=status.HTTP_404_NOT_FOUND
                 )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MeView(APIView):
+    @token_required
+    def get(self, request):
+        try:
+            user = User.objects.get(uuid=request.user_uuid)
+            return Response({"username": user.user_name})
+        except User.DoesNotExist:
+            return Response(
+                {"error": "使用者不存在"}, status=status.HTTP_401_UNAUTHORIZED
+            )
