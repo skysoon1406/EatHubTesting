@@ -64,3 +64,14 @@ class MeView(APIView):
             return Response(
                 {"error": "使用者不存在"}, status=status.HTTP_401_UNAUTHORIZED
             )
+
+
+class LOgoutView(APIView):
+    def post(self, requset):
+        token = requset.headers.get("Authorization")
+        if not token:
+            return Response(
+                {"error": "請帶入token"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        cache.delete(token)
+        return Response({"message": "已成功登出"}, status=status.HTTP_200_OK)
