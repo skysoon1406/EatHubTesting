@@ -6,4 +6,3 @@ from .serializers import CouponSerializer
 class CouponViewSet(viewsets.ModelViewSet):
     queryset = Coupon.objects.filter(is_archived=False)
     serializer_class = CouponSerializer
-    lookup_field = 'uuid'
