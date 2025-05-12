@@ -1,7 +1,15 @@
 from rest_framework import serializers
 from .models import Coupon
+from restaurants.models import Restaurant
+
+class RestaurantSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Restaurant
+        fields = ['name','img_url']
 
 class CouponSerializer(serializers.ModelSerializer):
+    restaurant = RestaurantSimpleSerializer(read_only=True)
+
     class Meta:
         model = Coupon
-        fields = '__all__' #要討論要不要全丟
+        exclude = ['id'] 
