@@ -46,7 +46,12 @@ class LoginView(APIView):
                     response = Response({"message": "登入成功"})
                     cookie_value = f"{user.uuid}:{token}"
                     response.set_cookie(
-                        "auth_token", cookie_value, httponly=True, max_age=3600
+                        "auth_token",
+                        cookie_value,
+                        httponly=True,
+                        max_age=3600,
+                        secure=True,
+                        samesite=None,
                     )
                     return response
                 else:
