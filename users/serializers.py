@@ -4,13 +4,13 @@ from django.contrib.auth.hashers import make_password
 
 
 class SignupSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source="user_name")
-    firstname = serializers.CharField(source="first_name")
-    lastname = serializers.CharField(source="last_name")
+    userName = serializers.CharField(source="user_name")
+    firstName = serializers.CharField(source="first_name")
+    lastName = serializers.CharField(source="last_name")
 
     class Meta:
         model = User
-        fields = ["firstname", "lastname", "username", "email", "password"]
+        fields = ["firstName", "lastName", "userName", "email", "password"]
 
     def validate_password(self, value):
         return make_password(value)

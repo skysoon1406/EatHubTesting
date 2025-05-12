@@ -21,7 +21,7 @@ class SignupView(APIView):
                     "message": "註冊成功",
                     "user": {
                         "uuid": user.uuid,
-                        "username": user.user_name,
+                        "userName": user.user_name,
                         "email": user.email,
                     },
                 },
@@ -41,8 +41,14 @@ class LoginView(APIView):
                 user = User.objects.get(email=email)
                 if check_password(password, user.password):
                     token = str(uuid.uuid4())
-                    cache.set(token, str(user.uuid), timeout=3600)
-                    return Response({"token": token, "user_uuid": user.uuid})
+                    cache_key = f"user_token:{user.uuid}"
+                    cache.set(cache_key, token, timeout=3600)
+                    response = Response({"message": "登入成功"})
+                    cookie_value = f"{user.uuid}:{token}"
+                    response.set_cookie(
+                        "auth_token", cookie_value, httponly=True, max_age=3600
+                    )
+                    return response
                 else:
                     return Response(
                         {"error": "密碼錯誤"}, status=status.HTTP_401_UNAUTHORIZED
@@ -57,21 +63,20 @@ class LoginView(APIView):
 class MeView(APIView):
     @token_required
     def get(self, request):
-        try:
-            user = User.objects.get(uuid=request.user_uuid)
-            return Response({"username": user.user_name})
-        except User.DoesNotExist:
-            return Response(
-                {"error": "使用者不存在"}, status=status.HTTP_401_UNAUTHORIZED
-            )
+        return Response({"message": "驗證成功"})
 
 
-class LOgoutView(APIView):
+class LogoutView(APIView):
     def post(self, requset):
-        token = requset.headers.get("Authorization")
-        if not token:
+        raw_token = requset.COOKIES.get("auth_token")
+        if not raw_token or ":" not in raw_token:
             return Response(
-                {"error": "請帶入token"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "未提供 token"}, status=status.HTTP_400_BAD_REQUEST
             )
-        cache.delete(token)
-        return Response({"message": "已成功登出"}, status=status.HTTP_200_OK)
+
+        user_uuid, token = raw_token.split(":", 1)
+        cache_key = f"user_token:{user_uuid}"
+        cache.delete(cache_key)
+        response = Response({"message": "登出成功"})
+        response.delete_cookie("auth_token")
+        return response
