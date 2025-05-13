@@ -25,9 +25,9 @@ class SmartSearchView(APIView):
 
         try:
             # 2. 呼叫 OpenAI API 組出關鍵詞
-            # keywords = openai_api(flavors, mains, staples)
-            keywords = flavors + mains + staples
-            # keywords = ["泰式", "雞肉", "飯"]
+            keywords = openai_api(flavors, mains, staples) # 原Code OpenAI Key
+            # keywords = flavors + mains + staples  # 測試 OK
+            # keywords = ["泰式", "雞肉", "飯"]   # 測試 不行
         except Exception as e:
             return Response({"error": f"OpenAI 呼叫失敗: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
