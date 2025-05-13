@@ -13,8 +13,8 @@ body = {
     }
 }
 
-result = {
-    "recommended":[
+API = {
+    "result":[
         {
             "name": "麵屋武藏 本店",
             "address": "100台灣台北市中正區忠孝西路一段36號B1",
