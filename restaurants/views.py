@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
 from utilities.place_api import text_search
 from utilities.openai_api import openai_api
 
@@ -73,4 +74,4 @@ def recommendRestaurants(request):
                 'placeId': p['placeId']
             } for p in result]
             break
-    return Response({'result': result})
+    return Response({'result': result}, status=status.HTTP_200_OK)
