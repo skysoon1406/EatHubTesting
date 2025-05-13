@@ -22,10 +22,10 @@ api = {
             "latitude": 25.0459993,
             "longitude": 121.5170414,
             "types": [
-            "restaurant",
-            "food",
-            "point_of_interest",
-            "establishment"
+                "restaurant",
+                "food",
+                "point_of_interest",
+                "establishment"
             ],
             "place_id": "ChIJpabH4qapQjQRqmx_I-V8sUg"
         },
