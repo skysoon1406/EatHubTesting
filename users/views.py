@@ -51,7 +51,7 @@ class LoginView(APIView):
                         httponly=True,
                         max_age=3600,
                         secure=True,
-                        samesite=None,
+                        samesite="lax",
                     )
                     return response
                 else:
