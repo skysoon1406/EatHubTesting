@@ -1,4 +1,7 @@
-from django.shortcuts import render
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from utilities.place_api import text_search
+from utilities.openai_api import openai_api
 
 """
 POST api/v1/restaurants/
@@ -44,5 +47,30 @@ API = {
 }
 """
 
+@api_view(['POST'])
 def recommendRestaurants(request):
-    pass
+    data = request.data
+    flavors = data['flavors']
+    mains = data['mains']
+    staples = data['staples']
+    latitude = data['userLocation']['latitude']
+    longitude = data['userLocation']['longitude']
+
+    location = f'{latitude},{longitude}'
+    
+    keywords = openai_api(flavors, mains, staples)
+
+    for keyword in keywords:
+        result = text_search(keyword, location, 800, count=10)
+        if len(result) >= 10: 
+            result = [{
+                'name': p['name'],
+                'address': p['address'],
+                'googleRating': p.get('rating'),
+                'latitude': p['latitude'],
+                'longitude': p['longitude'],
+                'types': p['types'],
+                'placeId': p['placeId']
+            } for p in result]
+            break
+    return Response({'result': result})
