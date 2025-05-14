@@ -11,10 +11,10 @@ def recommendRestaurants(request):
     flavors = data['flavors']
     mains = data['mains']
     staples = data['staples']
-    # latitude = data['userLocation']['latitude']
-    # longitude = data['userLocation']['longitude']
-    latitude = data.get('latitude')
-    longitude = data.get('longitude')
+    latitude = data['userLocation']['latitude']
+    longitude = data['userLocation']['longitude']
+    # latitude = data.get('latitude')
+    # longitude = data.get('longitude')   #  測試可以正常獲取資料並存進資料庫
 
     location = f'{latitude},{longitude}'
     
