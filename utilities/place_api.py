@@ -25,12 +25,13 @@ def text_search(keyword, location, radius, count=61):
             result.append({
                 'name': place.get('name'),
                 'address': place.get('formatted_address'),
-                'rating': place.get('rating'),
+                'google_rating': place.get('rating'),
                 'latitude': place['geometry']['location']['lat'],
                 'longitude': place['geometry']['location']['lng'],
                 'types': place.get('types', []),
-                'placeId': place.get('place_id'),
-                'googlePhotoReference': (
+                'place_id': place.get('place_id'),
+                'user_ratings_total': place.get('user_ratings_total'),
+                'google_photo_reference': (
                     place.get('photos', [{}])[0].get('photo_reference')
                     if place.get('photos') else None
                 )
