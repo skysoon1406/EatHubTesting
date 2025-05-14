@@ -55,22 +55,25 @@ def recommendRestaurants(request):
     flavors = data['flavors']
     mains = data['mains']
     staples = data['staples']
-    # latitude = float(data['userLocation']['latitude'])
-    # longitude = float(data['userLocation']['longitude'])
-    latitude = data('latitude')
-    longtitude = data('longitude')
+    # latitude = data['userLocation']['latitude']
+    # longitude = data['userLocation']['longitude']
+    latitude = data.get('latitude')
+    longitude = data.get('longitude')
 
     location = f'{latitude},{longitude}'
     
     keywords = openai_api(flavors, mains, staples)
 
     for keyword in keywords:
-        result = text_search(keyword, location="25.042590701978373,121.51368948063673", radius=800, count=10)
+        result = text_search(keyword, location, radius=800, count=10)
 
         if len(result) >= 10:
             cleaned_result = [] 
 
             for p in result:
+                if len(cleaned_result) >= 10:
+                    break  
+
                 upsert_restaurant(p) 
                 cleaned_result.append({
                     'name': p['name'],
@@ -81,9 +84,7 @@ def recommendRestaurants(request):
                     'types': p['types'],
                     'placeId': p['placeId']
                 })
-                if len(cleaned_result) >= 10:
-                    break  
-
+                
     return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
 
 
