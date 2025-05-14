@@ -62,16 +62,16 @@ def recommendRestaurants(request):
     keywords = openai_api(flavors, mains, staples)
 
     for keyword in keywords:
-        result = text_search(keyword, location, 800, count=10)
+        restaurantsData = text_search(keyword, location, 800, count=10)
         if len(result) >= 10: 
             result = [{
                 'name': p['name'],
                 'address': p['address'],
-                'googleRating': p.get('rating'),
+                'googleRating': p.get('google_rating'),
                 'latitude': p['latitude'],
                 'longitude': p['longitude'],
                 'types': p['types'],
-                'placeId': p['placeId']
-            } for p in result]
+                'placeId': p['place_id']
+            } for p in restaurantsData]
             break
     return Response({'result': result}, status=status.HTTP_200_OK)
