@@ -1,4 +1,7 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from users.utils import token_required
+from .models import Review, Restaurant
+from .serializers import ReviewSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from utilities.place_api import text_search
@@ -75,3 +78,21 @@ def recommendRestaurants(request):
             } for p in result]
             break
     return Response({'result': result}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@token_required
+def create_review(request, restaurant_uuid):
+    try:
+        retsaurant=ReviewSerializer.objects.get(uuid=restaurant_uuid)
+    except Restaurant.DoesNotExist:
+        return Response({'error':'找不到該餐廳'}, status=status.HTTP_404_NOT_FOUND)
+    
+    data=request.data.copy()
+    data['restaurant']=retsaurant.id
+    data['user']=request.user.id
+
+    serializer= ReviewSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.error, status=status.HTTP_400_BAD_REQUEST)
