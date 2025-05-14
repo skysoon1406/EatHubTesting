@@ -7,7 +7,6 @@ from restaurants.models import Restaurant
 
 @api_view(['POST'])
 def recommendRestaurants(request):
-    print(request.data)
     data = request.data
     flavors = data['flavors']
     mains = data['mains']
