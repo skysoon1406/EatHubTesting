@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 def openai_api(flavors, mains, staples):
     load_dotenv()
 
-    print("目前 OpenAI KEY：", os.getenv("OPENAI_API_KEY"))  # 暫時 debug 用
+    print("目前 OpenAI KEY：", os.getenv("OPENAI_API_KEY"))  # 暫時 debug 用， 上線時要刪除
 
     try:
         client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))

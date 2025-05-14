@@ -18,6 +18,10 @@ class SmartSearchView(APIView):
         flavors = request.data.get("flavors", [])
         mains = request.data.get("mains", [])
         staples = request.data.get("staples", [])
+        latitude = request.data.get("latitude")
+        longitude = request.data.get("longitude")
+
+        location = f'{latitude},{longitude}'
 
         # 基本驗證：三項至少要有一項有值
         if not any([flavors, mains, staples]):
@@ -37,7 +41,7 @@ class SmartSearchView(APIView):
         try:
             for keyword in keywords:
                 # 3. 針對每個關鍵詞呼叫 Google Place API
-                place_data = text_search(keyword, location="25.0330,121.5654", radius="5000", count=20)
+                place_data = text_search(keyword,  location=location, radius="5000", count=20)
 
                 for place in place_data:
                     place_id = place.get("placeId")
