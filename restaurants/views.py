@@ -7,14 +7,14 @@ from restaurants.models import Restaurant
 
 @api_view(['POST'])
 def recommendRestaurants(request):
+    print(request.data)
     data = request.data
     flavors = data['flavors']
     mains = data['mains']
     staples = data['staples']
-    latitude = data['userLocation']['latitude']
-    longitude = data['userLocation']['longitude']
-    # latitude = data.get('latitude')
-    # longitude = data.get('longitude')   #  測試可以正常獲取資料並存進資料庫
+    latitude = data['user_location']['latitude']
+    longitude = data['user_location']['longitude']  # 修改 UserLocation 为 user_location
+
 
     location = f'{latitude},{longitude}'
     
@@ -31,7 +31,7 @@ def recommendRestaurants(request):
                 if len(cleaned_result) >= 10:
                     break  
 
-                upsert_restaurant(p) 
+                upsert_restaurant(p)   # 使用 upsert_restaurant 函数来更新或插入餐厅数据
                 cleaned_result.append({
                 'name': p['name'],
                 'address': p['address'],
@@ -46,7 +46,7 @@ def recommendRestaurants(request):
 def detail(req):
     pass
 
-def upsert_restaurant(place):
+def upsert_restaurant(place): 
     place_id = place.get("place_id")
     if not place_id:
         return
