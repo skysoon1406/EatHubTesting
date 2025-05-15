@@ -6,7 +6,7 @@ from django.core.cache import cache
 import uuid
 from .models import User
 from .serializers import SignupSerializer, LoginSerializer
-from .utils import token_required
+from .utils import token_required_cbv
 
 # Create your views here.
 
@@ -44,7 +44,10 @@ class LoginView(APIView):
                     cache_key = f'user_token:{user.uuid}'
                     cache.set(cache_key, token, timeout=3600)
 
-                    response = Response({'message': '登入成功'})
+                    response = Response({'firstName': user.first_name,
+                                            'lastName': user.last_name,
+                                            'userName': user.user_name, 
+                                            'message': '登入成功'})
 
                     cookie_value = f'{user.uuid}:{token}'
                     response.set_cookie(
@@ -68,7 +71,7 @@ class LoginView(APIView):
 
 
 class MeView(APIView):
-    @token_required
+    @token_required_cbv
     def get(self, request):
         return Response({'message': f'驗證成功 {request.user_uuid}'})
 
