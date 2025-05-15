@@ -125,6 +125,51 @@ def upsert_restaurant(place):
                 image_url=image_url
             )
 
+@api_view(['POST'])
+def testRestaurants(request):
+    data = request.data
+    flavors = data['flavors']
+    mains = data['mains']
+    staples = data['staples']
+    latitude = data['user_location']['latitude']
+    longitude = data['user_location']['longitude']  
+
+
+    location = f'{latitude},{longitude}'
+    
+    keywords = openai_api(flavors, mains, staples)
+
+    cleaned_result = [] 
+
+    for keyword in keywords:
+        restaurants_data = text_search(keyword, location, 800, count=10)
+        if len(restaurants_data) >= 10: 
+            
+
+            for p in restaurants_data:
+                if len(cleaned_result) >= 10:
+                    break  
+
+                upsert_restaurant(p)  
+
+                db_restaurant = Restaurant.objects.filter(place_id=p['place_id']).first()
+                image_url = db_restaurant.image_url if db_restaurant else None
+
+                cleaned_result.append({
+                'name': p['name'],
+                'address': p['address'],
+                'google_rating': p.get('google_rating'),
+                'latitude': p['latitude'],
+                'longitude': p['longitude'],
+                'types': p['types'],
+                'user_ratings_total': p.get('user_ratings_total'),                
+                'place_id': p['place_id'],
+                'google_photo_reference': p.get('google_photo_reference'),
+                'image_url': image_url,                
+            } )
+    return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 def test_upload_image(request):
     photo_ref = request.GET.get('photo_ref')
@@ -157,34 +202,3 @@ def test_upload_image(request):
         "message": "Image uploaded successfully.",
         "image_url": image_url
     }, status=status.HTTP_200_OK)
-
-@api_view(['POST'])
-def testRestaurant(request):
-    data = request.data
-    flavors = data['flavors']
-    mains = data['mains']
-    staples = data['staples']
-    latitude = data['user_location']['latitude']
-    longitude = data['user_location']['longitude'] 
-
-    location = f'{latitude},{longitude}'
-    
-    keywords = openai_api(flavors, mains, staples)
-
-    for keyword in keywords:
-        restaurants_data = text_search(keyword, location, 800, count=10)
-        if len(result) >= 10: 
-            result = [{
-                'name': p['name'],
-                'address': p['address'],
-                'google_rating': p.get('google_rating'),
-                'latitude': p['latitude'],
-                'longitude': p['longitude'],
-                'types': p['types'],
-                'place_id': p['place_id'],
-                'image_url': p.get('google_photo_reference'),
-            } for p in restaurants_data]
-            break
-    return Response({'result': result}, status=status.HTTP_200_OK)
-
-                    
