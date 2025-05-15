@@ -9,16 +9,29 @@ API = {
             "address": "100台灣台北市中正區忠孝西路一段36號B1",
             "googleRating": 4.3,
             "placeId": "ChIJpabH4qapQjQRqmx_I-V8sUg",
-            "imageUrl": "https:"
+            "imageUrl": "https:",
+            "latitude": "",
+            "longitude": "",
+            "phone": "num" or None,
+            "openHours": {
+                "monday": "" or None,
+                "tuesday": "" or None,
+                "wednesday": "" or None,
+                "thursday": "" or None,
+                "firday": "" or None,
+                "saturday": "" or None,
+                "sunday": "" or None
+            },
+            "website": "",
+            "userRatingsTotal": ""
         },
         "promotion": {
             "title": "",
             "description": "",
             "started_at": "",
             "ended_at": "",
-            "is_archived": False,
             "image_url": ""
-        },
+        } or None,
         "coupon": {
             "serial_number": "",
             "started_at": "",
@@ -27,9 +40,8 @@ API = {
             "description": "",
             "discount_type": "",
             "discount_value": "",
-            "is_archived": False,
             "uuid": ""
-        }
+        } or None,
         "reviews": [
             {
                 "user": "",
