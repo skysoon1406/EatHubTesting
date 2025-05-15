@@ -1,34 +1,49 @@
 from rest_framework import serializers
 from .models import Restaurant, Review
+from users.serializers import SimpleUserSerializer
+from promotions.serializers import PromotionSerializer, CouponSerializer
+
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField()
+    user = SimpleUserSerializer()
 
     class Meta:
         model = Review
-        fields = ["user", "rating", "content", "created_at", "image_url"]
+        fields = ["user", "rating", "content", "created_at", "img_url"]
 
-class RestaurantDetailSerializer(serializers.ModelSerializer):
-    placeId = serializers.CharField(source="place_id")
-    googleRating = serializers.FloatField(source="google_rating")
-    imageUrl = serializers.URLField(source="img_url", allow_null=True)
-    userRatingsTotal = serializers.IntegerField(source="user_ratings_total", allow_null=True)
-    openHours = serializers.SerializerMethodField()
 
+class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
-        fields = [
-            "name", "address", "googleRating", "placeId", "imageUrl",
-            "latitude", "longitude", "phone", "openHours", "website", "userRatingsTotal"
-        ]
+        exclude = ['id', 'created_at']
 
-    def get_openHours(self, obj):
-        return obj.open_hours or {
-            "monday": None,
-            "tuesday": None,
-            "wednesday": None,
-            "thursday": None,
-            "friday": None,
-            "saturday": None,
-            "sunday": None
-        }
+class SimpleRestaurantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Restaurant
+        fields = ['name','image_url']
+
+class RestaurantDetailSerializer(serializers.Serializer):
+    restaurant = RestaurantSerializer()
+    promotion = serializers.SerializerMethodField()
+    coupon = serializers.SerializerMethodField()
+    reviews = serializers.SerializerMethodField()
+
+    def get_promotion(self, obj):
+        promotions = obj.promotions.filter(is_archived=False).order_by("-created_at")
+        return (
+            PromotionSerializer(promotions, many=True).data
+            if promotions.exists()
+            else None
+        )
+    
+    def get_coupon(self, obj):
+        coupon = obj.coupons.filter(is_archived=False).order_by("-started_at").first()
+        return CouponSerializer(coupon).data if coupon else None
+
+    def get_reviews(self, obj):
+        reviews = obj.reviews.select_related("user").all()
+        return (
+            ReviewSerializer(reviews, many=True).data
+            if reviews.exists()
+            else None
+        )
