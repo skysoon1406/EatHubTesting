@@ -1,9 +1,12 @@
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 from utilities.place_api import text_search
 from utilities.openai_api import openai_api
-from restaurants.models import Restaurant
+from .models import Restaurant
+from .serializers import RestaurantDetailSerializer
 
 @api_view(['POST'])
 def recommendRestaurants(request):
@@ -42,8 +45,11 @@ def recommendRestaurants(request):
             } )
     return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
 
-def detail(req):
-    pass
+class RestaurantDetailView(APIView):
+    def get(self, request, uuid):
+        restaurant = get_object_or_404(Restaurant, uuid=uuid)
+        serializer = RestaurantDetailSerializer(restaurant)
+        return Response({"result": serializer.data})
 
 def upsert_restaurant(place): 
     place_id = place.get("place_id")
