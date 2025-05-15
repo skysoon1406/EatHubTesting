@@ -9,46 +9,46 @@ API = {
             "address": "100台灣台北市中正區忠孝西路一段36號B1",
             "googleRating": 4.3,
             "placeId": "ChIJpabH4qapQjQRqmx_I-V8sUg",
-            "imageUrl": "https:",
-            "latitude": "",
-            "longitude": "",
-            "phone": "" or None,
+            "imageUrl": string | null,
+            "latitude": 25.0459993,
+            "longitude": 121.5170414,
+            "phone": string | null,
             "openHours": {
-                "monday": "" or None,
-                "tuesday": "" or None,
-                "wednesday": "" or None,
-                "thursday": "" or None,
-                "firday": "" or None,
-                "saturday": "" or None,
-                "sunday": "" or None
+                "monday": string | null,
+                "tuesday": string | null,
+                "wednesday": string | null,
+                "thursday": string | null,
+                "friday": string | null,
+                "saturday": string | null,
+                "sunday": string | null
             },
-            "website": "",
-            "userRatingsTotal": ""
+            "website": string | null,
+            "userRatingsTotal": 123
         },
         "promotion": {
-            "title": "",
-            "description": "",
-            "started_at": "",
-            "ended_at": "",
-            "image_url": ""
-        } or None,
+            "title": string,
+            "description": string,
+            "startedAt": "2025-05-15T12:34:56Z",
+            "endedAt": "2025-05-15T12:34:56Z",
+            "imageUrl": string | null
+        } or null,
         "coupon": {
-            "serial_number": "",
-            "started_at": "",
-            "ended_at": "",
-            "title": "",
-            "description": "",
-            "discount_type": "",
-            "discount_value": "",
-            "uuid": ""
-        } or None,
+            "serialNumber": string,
+            "startedAt": "2025-05-15T12:34:56Z",
+            "endedAt": "2025-05-15T12:34:56Z",
+            "title": string,
+            "description": string,
+            "discountType": string,
+            "discountValue": 30,
+            "uuid": string
+        } or null,
         "reviews": [
             {
-                "user": "",
-                "rating": "",
-                "content": "",
-                "created_at": "",
-                "image_url": ""
+                "user": string,
+                "rating": 5,
+                "content": string,
+                "createdAt": "2025-05-15T12:34:56Z",
+                "imageUrl": string | null
             },
             ...
         ]
