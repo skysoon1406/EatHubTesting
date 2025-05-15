@@ -14,7 +14,7 @@ def recommendRestaurants(request):
     mains = data['mains']
     staples = data['staples']
     latitude = data['user_location']['latitude']
-    longitude = data['user_location']['longitude']  # 修改 UserLocation 为 user_location
+    longitude = data['user_location']['longitude']  
 
 
     location = f'{latitude},{longitude}'
