@@ -54,33 +54,33 @@ def upsert_restaurant(place):
     obj, created = Restaurant.objects.get_or_create(
         place_id=place_id,
         defaults={
-            "name": place.get("name"),
-            "address": place.get("address"),
-            "google_rating": place.get("google_rating"),
-            "latitude": place.get("latitude"),
-            "longitude": place.get("longitude"),
-            "types": ", ".join(place.get("types", [])),
+            'name': place.get('name'),
+            'address': place.get('address'),
+            'google_rating': place.get('google_rating'),
+            'latitude': place.get('latitude'),
+            'longitude': place.get('longitude'),
+            'types': ', '.join(place.get('types', [])),
             'user_ratings_total': place.get('user_ratings_total'),
-            "google_photo_reference": place.get("google_photo_reference"),
+            'google_photo_reference': place.get('google_photo_reference'),
         }
     )
 
     if not created:
         updated = False
-        if obj.google_rating != place.get("google_rating"):
-            obj.google_rating = place.get("google_rating")
+        if obj.google_rating != place.get('google_rating'):
+            obj.google_rating = place.get('google_rating')
             updated = True
-        if obj.address != place.get("address"):
-            obj.address = place.get("address")
+        if obj.address != place.get('address'):
+            obj.address = place.get('address')
             updated = True
-        if obj.name != place.get("name"):
-            obj.name = place.get("name")
+        if obj.name != place.get('name'):
+            obj.name = place.get('name')
             updated = True
-        if obj.user_ratings_total != place.get("user_ratings_total"):
-            obj.user_ratings_total = place.get("user_ratings_total")
+        if obj.user_ratings_total != place.get('user_ratings_total'):
+            obj.user_ratings_total = place.get('user_ratings_total')
             updated = True
-        if obj.types != ", ".join(place.get("types", [])):
-            obj.types = ", ".join(place.get("types", []))
+        if obj.types != ', '.join(place.get('types', [])):
+            obj.types = ', '.join(place.get('types', []))
             updated = True
         if updated:
             obj.save()
