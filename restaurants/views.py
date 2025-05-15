@@ -50,7 +50,8 @@ def recommendRestaurants(request):
 @token_required_fbv
 def create_review(request, restaurant_uuid):
     try:
-        restaurant=Restaurant.objects.get(uuid=restaurant_uuid)
+        restaurant = Restaurant.objects.get(uuid=restaurant_uuid)
+
     except Restaurant.DoesNotExist:
         return Response({'error':'找不到該餐廳'}, status=status.HTTP_404_NOT_FOUND)
     
@@ -58,7 +59,6 @@ def create_review(request, restaurant_uuid):
     user = User.objects.get(uuid=request.user_uuid)
 
     serializer = ReviewSerializer(data=data)
-    print(serializer.fields)
     if serializer.is_valid():
         serializer.save(user=user, restaurant=restaurant)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
