@@ -8,7 +8,7 @@ class Promotion(models.Model):
     started_at = models.DateTimeField(blank=True, null=True)  # 開始時間，可空
     ended_at = models.DateTimeField(blank=True, null=True)  # 結束時間，可空
     is_archived = models.BooleanField(default=False)  # 是否封存，預設 False
-    img_url = models.URLField(max_length=255, blank=True, null=True)  # 活動圖片網址，可空
+    image_url = models.URLField(max_length=255, blank=True, null=True)  # 活動圖片網址，可空
     restaurant = models.ForeignKey(
         'restaurants.Restaurant',
         on_delete=models.CASCADE,

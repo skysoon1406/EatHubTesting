@@ -5,7 +5,7 @@ from restaurants.models import Restaurant
 class RestaurantSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
-        fields = ['name','img_url']
+        fields = ['name','image_url']
 
 class CouponSerializer(serializers.ModelSerializer):
     restaurant = RestaurantSimpleSerializer(read_only=True)

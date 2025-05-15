@@ -7,11 +7,20 @@ class User(models.Model):
     user_name = models.CharField(max_length=100)  # 顯示名稱
     first_name = models.CharField(max_length=50, blank=True, null=True)  # 名字，可空
     last_name = models.CharField(max_length=50, blank=True, null=True)  # 姓氏，可空
-    img_url = models.URLField(max_length=300, blank=True, null=True)  # 頭像網址，可空
+    image_url = models.URLField(max_length=300, blank=True, null=True)  # 頭像網址，可空
     created_at = models.DateTimeField(auto_now_add=True)  # 建立時間，預設為現在
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # uuid
-    #專屬商家部分  
-    is_merchant = models.BooleanField(default=False)  # 是否為商家會員，預設 False
+    class Role(models.TextChoices):
+        MEMBER = 'member', '一般會員'
+        MERCHANT = 'merchant', '商家'
+        VIP_MERCHANT = 'vip_merchant', 'VIP 商家'
+
+    role = models.CharField(
+        max_length=20,
+        choices=Role.choices,
+        default=Role.MEMBER,
+    ) # 三種角色,預設 一般會員
+    #專屬商家部分
     is_vip = models.BooleanField(default=False)  # 是否為 VIP，預設 False
     license_url = models.URLField(max_length=255, blank=True, null=True)  # 營業證網址，可空
     restaurant = models.ForeignKey(
@@ -19,8 +28,7 @@ class User(models.Model):
         on_delete=models.SET_NULL,
         blank=True, null=True,
         related_name='merchant_user',
-        )  # 綁定餐廳，可空
-
+        )  # 綁定餐廳，可空    
     def __str__(self):
         return self.email #方便shell顯示
 
