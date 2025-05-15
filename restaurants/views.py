@@ -45,7 +45,7 @@ def recommendRestaurants(request):
                 'longitude': p['longitude'],
                 'types': p['types'],
                 'user_ratings_total': p.get('user_ratings_total'),                
-                'place_id': p['place_id']
+                'place_id': p['place_id'],
                 'image_url': image_url,                
             } )
     return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
