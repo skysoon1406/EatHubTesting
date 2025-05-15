@@ -51,14 +51,12 @@ def recommendRestaurants(request):
 def create_review(request, restaurant_uuid):
     try:
         restaurant = Restaurant.objects.get(uuid=restaurant_uuid)
-
     except Restaurant.DoesNotExist:
         return Response({'error':'找不到該餐廳'}, status=status.HTTP_404_NOT_FOUND)
     
-    data = request.data.copy()
-    user = User.objects.get(uuid=request.user_uuid)
+    user = User.objects.get(uuid =request.user_uuid)
 
-    serializer = ReviewSerializer(data=data)
+    serializer = ReviewSerializer(data=request.data, context={'user':user, 'restaurant':restaurant})
     if serializer.is_valid():
         serializer.save(user=user, restaurant=restaurant)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
