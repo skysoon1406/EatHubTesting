@@ -124,3 +124,36 @@ def upsert_restaurant(place):
                 google_photo_reference=photo_ref,
                 image_url=image_url
             )
+
+@api_view(['GET'])
+def test_upload_image(request):
+    photo_ref = request.GET.get('photo_ref')
+    place_id = request.GET.get('place_id')
+
+    if not photo_ref or not place_id:
+        return Response(
+            {"error": "Missing 'photo_ref' or 'place_id' in query string."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # 嘗試取得 Google 圖片
+    photo_bytes = get_google_photo(photo_ref)
+    if not photo_bytes:
+        return Response(
+            {"error": "Failed to fetch image from Google using given photo_ref."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        # 上傳至 Cloudinary
+        image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
+    except Exception as e:
+        return Response(
+            {"error": f"Cloudinary upload failed: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    return Response({
+        "message": "Image uploaded successfully.",
+        "image_url": image_url
+    }, status=status.HTTP_200_OK)
