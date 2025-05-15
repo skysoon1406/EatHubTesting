@@ -44,7 +44,11 @@ API = {
         } or null,
         "reviews": [
             {
-                "user": string,
+                "user": {
+                    "userName": string,
+                    "imageUrl": string,
+                    "uuid": string
+                },
                 "rating": 5,
                 "content": string,
                 "createdAt": "2025-05-15T12:34:56Z",
