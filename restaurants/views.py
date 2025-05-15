@@ -34,6 +34,8 @@ def recommendRestaurants(request):
 
                 upsert_restaurant(p)  
 
+                db_restaurant = Restaurant.objects.filter(place_id=p['place_id']).first()
+                image_url = db_restaurant.image_url if db_restaurant else None
 
                 cleaned_result.append({
                 'name': p['name'],
@@ -43,7 +45,8 @@ def recommendRestaurants(request):
                 'longitude': p['longitude'],
                 'types': p['types'],
                 'user_ratings_total': p.get('user_ratings_total'),                
-                'place_id': p['place_id']          
+                'place_id': p['place_id']
+                'image_url': image_url,                
             } )
     return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
 
