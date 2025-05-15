@@ -12,7 +12,7 @@ API = {
             "imageUrl": "https:",
             "latitude": "",
             "longitude": "",
-            "phone": "num" or None,
+            "phone": "" or None,
             "openHours": {
                 "monday": "" or None,
                 "tuesday": "" or None,
