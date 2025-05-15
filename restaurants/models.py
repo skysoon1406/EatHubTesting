@@ -15,7 +15,7 @@ class Restaurant(models.Model):
         null=True,
         )  # Google 評分
     place_id = models.CharField(max_length=100, unique=True)  # Google Place ID
-    img_url = models.URLField(max_length=255, blank=True, null=True)  # 店家圖片，可空
+    image_url = models.URLField(max_length=255, blank=True, null=True)  # 店家圖片，可空
     website = models.URLField(max_length=255, blank=True, null=True)  # 官網，可空
     user_ratings_total = models.IntegerField(blank=True, null=True)  # 評價數量，可空
     google_photo_reference = models.TextField(blank=True, null=True)  # Google 照片參考 ID，可空
@@ -45,5 +45,5 @@ class Review(models.Model):
         )  # 評分，可空
     content = models.TextField()  # 評論內容
     created_at = models.DateTimeField(auto_now_add=True)  # 建立時間
-    img_url = models.URLField(max_length=255, blank=True, null=True)  # 附圖，可空
+    image_url = models.URLField(max_length=255, blank=True, null=True)  # 附圖，可空
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # uuid
