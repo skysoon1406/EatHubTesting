@@ -133,7 +133,7 @@ def upsert_restaurant(place):
                 try:
                     image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
                 except Exception as e:
-                    print(f"[Image Upload Error] {place_id} - {e}")
+                    pass
 
         
         Restaurant.objects.create(
