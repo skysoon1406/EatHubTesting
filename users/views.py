@@ -6,7 +6,7 @@ from django.core.cache import cache
 import uuid
 from .models import User
 from .serializers import SignupSerializer, LoginSerializer
-from .utils import token_required
+from .utils import token_required_cbv
 
 # Create your views here.
 
@@ -75,7 +75,7 @@ class LoginView(APIView):
 
 
 class MeView(APIView):
-    @token_required
+    @token_required_cbv
     def get(self, request):
         return Response({'message': f'驗證成功 {request.user_uuid}'})
 
