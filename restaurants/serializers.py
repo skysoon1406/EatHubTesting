@@ -5,17 +5,32 @@ from promotions.serializers import PromotionSerializer, CouponSerializer
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = SimpleUserSerializer()
+    user = SimpleUserSerializer(read_only=True)
+    image_url = serializers.URLField(source='img_url', required=False)
 
     class Meta:
         model = Review
-        fields = ["user", "rating", "content", "created_at", "img_url"]
+        fields = ['uuid', 'user', 'restaurant', 'rating', 'content', 'created_at', 'image_url']
+        read_only_fields = ['uuid', 'created_at', 'user', 'restaurant']
+    def create(self, validated_data):
+        user = self.context['user']
+        restaurant = self.context['restaurant']
 
+        if Review.objects.filter(user=user, restaurant=restaurant).exists():
+            raise serializers.ValidationError('該餐廳已評論過。')
+        return Review.objects.create(user=user, restaurant=restaurant, **validated_data)
 
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
         exclude = ['id', 'created_at']
+
+class SimpleReviewSerializer(serializers.ModelSerializer):
+    user = SimpleUserSerializer()
+
+    class Meta:
+        model = Review
+        fields = ["user", "rating", "content", "created_at", "img_url"]
 
 class SimpleRestaurantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,7 +58,7 @@ class RestaurantDetailSerializer(serializers.Serializer):
     def get_reviews(self, obj):
         reviews = obj.reviews.select_related("user").all()
         return (
-            ReviewSerializer(reviews, many=True).data
+            SimpleReviewSerializer(reviews, many=True).data
             if reviews.exists()
             else None
         )
