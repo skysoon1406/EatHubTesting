@@ -25,6 +25,13 @@ class RestaurantSerializer(serializers.ModelSerializer):
         model = Restaurant
         exclude = ['id', 'created_at']
 
+class SimpleReviewSerializer(serializers.ModelSerializer):
+    user = SimpleUserSerializer()
+
+    class Meta:
+        model = Review
+        fields = ["user", "rating", "content", "created_at", "img_url"]
+
 class SimpleRestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
@@ -51,7 +58,7 @@ class RestaurantDetailSerializer(serializers.Serializer):
     def get_reviews(self, obj):
         reviews = obj.reviews.select_related("user").all()
         return (
-            ReviewSerializer(reviews, many=True).data
+            SimpleReviewSerializer(reviews, many=True).data
             if reviews.exists()
             else None
         )
