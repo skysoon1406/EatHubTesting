@@ -9,6 +9,9 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from utilities.place_api import text_search
 from utilities.openai_api import openai_api
+from restaurants.models import Restaurant
+from utilities.cloudinary_upload import upload_to_cloudinary
+from utilities.place_api import get_google_photo
 from .serializers import RestaurantDetailSerializer
 
 
@@ -19,7 +22,7 @@ def recommendRestaurants(request):
     mains = data['mains']
     staples = data['staples']
     latitude = data['user_location']['latitude']
-    longitude = data['user_location']['longitude']  # 修改 UserLocation 为 user_location
+    longitude = data['user_location']['longitude']  
 
 
     location = f'{latitude},{longitude}'
@@ -33,20 +36,25 @@ def recommendRestaurants(request):
         if len(restaurants_data) >= 10: 
             
 
-            for p in restaurants_data:
+            for place in restaurants_data:
                 if len(cleaned_result) >= 10:
                     break  
 
-                upsert_restaurant(p)   # 使用 upsert_restaurant 函数来更新或插入餐厅数据
+                upsert_restaurant(place)  
+
+                db_restaurant = Restaurant.objects.filter(place_id=place['place_id']).first()
+                image_url = db_restaurant.image_url if db_restaurant else None
+
                 cleaned_result.append({
-                'name': p['name'],
-                'address': p['address'],
-                'google_rating': p.get('google_rating'),
-                'latitude': p['latitude'],
-                'longitude': p['longitude'],
-                'types': p['types'],
-                'user_ratings_total': p.get('user_ratings_total'),
-                'place_id': p['place_id']
+                'name': place['name'],
+                'address': place['address'],
+                'google_rating': place.get('google_rating'),
+                'latitude': place['latitude'],
+                'longitude': place['longitude'],
+                'types': place['types'],
+                'user_ratings_total': place.get('user_ratings_total'),                
+                'place_id': place['place_id'],
+                'image_url': image_url,                
             } )
     return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
 
@@ -80,36 +88,63 @@ def upsert_restaurant(place):
     if not place_id:
         return
 
-    obj, created = Restaurant.objects.get_or_create(
-        place_id=place_id,
-        defaults={
-            'name': place.get('name'),
-            'address': place.get('address'),
-            'google_rating': place.get('google_rating'),
-            'latitude': place.get('latitude'),
-            'longitude': place.get('longitude'),
-            'types': ', '.join(place.get('types', [])),
-            'user_ratings_total': place.get('user_ratings_total'),
-            'google_photo_reference': place.get('google_photo_reference'),
-        }
-    )
+    photo_ref = place.get('google_photo_reference')
+    image_url = None
+    
 
-    if not created:
+    restaurant = Restaurant.objects.filter(place_id=place_id).first()
+
+    if restaurant:
+        if not restaurant.image_url and photo_ref:
+            photo_bytes = get_google_photo(photo_ref)
+            if photo_bytes:
+                try:
+                    image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
+                    restaurant.image_url = image_url
+                    restaurant.save()
+                except Exception as e:
+                    pass
+ 
+
+        
         updated = False
-        if obj.google_rating != place.get('google_rating'):
-            obj.google_rating = place.get('google_rating')
+        if restaurant.google_rating != place.get('google_rating'):
+            restaurant.google_rating = place.get('google_rating')
             updated = True
-        if obj.address != place.get('address'):
-            obj.address = place.get('address')
+        if restaurant.address != place.get('address'):
+            restaurant.address = place.get('address')
             updated = True
-        if obj.name != place.get('name'):
-            obj.name = place.get('name')
+        if restaurant.name != place.get('name'):
+            restaurant.name = place.get('name')
             updated = True
-        if obj.user_ratings_total != place.get('user_ratings_total'):
-            obj.user_ratings_total = place.get('user_ratings_total')
+        if restaurant.user_ratings_total != place.get('user_ratings_total'):
+            restaurant.user_ratings_total = place.get('user_ratings_total')
             updated = True
-        if obj.types != ', '.join(place.get('types', [])):
-            obj.types = ', '.join(place.get('types', []))
+        if restaurant.types != ', '.join(place.get('types', [])):
+            restaurant.types = ', '.join(place.get('types', []))
             updated = True
         if updated:
-            obj.save()
+            restaurant.save()
+
+    else:
+        if photo_ref:
+            photo_bytes = get_google_photo(photo_ref)
+            if photo_bytes:
+                try:
+                    image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
+                except Exception as e:
+                    pass
+
+        
+        Restaurant.objects.create(
+            place_id=place_id,
+            name=place.get('name'),
+            address=place.get('address'),
+            google_rating=place.get('google_rating'),
+            latitude=place.get('latitude'),
+            longitude=place.get('longitude'),
+            types=', '.join(place.get('types', [])),
+            user_ratings_total=place.get('user_ratings_total'),
+            google_photo_reference=photo_ref,
+            image_url=image_url
+        )
