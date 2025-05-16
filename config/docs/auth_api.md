@@ -36,12 +36,15 @@ Request Body :
 
 Success Respones [200 OK]:
 {
+    'firstName':'t',
+    'lastName':'ext3',
+    'userName':'text3'
     'message':'登入成功'
 }
 
 Cookie:
-    - 名稱：`auth_token`
-    - 格式：`{user_uuid}:{token}`
+    - 名稱：'auth_token'
+    - 格式：'{user_uuid}:{token}'
     - 屬性：HttpOnly, Secure, SameSite=Lax
     - 有效時間：3600 秒（1 小時）
 

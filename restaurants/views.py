@@ -1,12 +1,16 @@
-from rest_framework.decorators import api_view
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from users.utils import token_required_fbv
+from .models import Review, Restaurant
+from .serializers import ReviewSerializer
+from users.models import User
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from utilities.place_api import text_search
 from utilities.openai_api import openai_api
-from .models import Restaurant
 from .serializers import RestaurantDetailSerializer
+
 
 @api_view(['POST'])
 def recommendRestaurants(request):
@@ -45,6 +49,25 @@ def recommendRestaurants(request):
                 'place_id': p['place_id']
             } )
     return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@token_required_fbv
+def create_review(request, restaurant_uuid):
+    try:
+        restaurant = Restaurant.objects.get(uuid=restaurant_uuid)
+    except Restaurant.DoesNotExist:
+        return Response({'error':'找不到該餐廳'}, status=status.HTTP_404_NOT_FOUND)
+    
+    user = User.objects.get(uuid =request.user_uuid)
+
+    serializer = ReviewSerializer(data=request.data, context={'user':user, 'restaurant':restaurant})
+    if serializer.is_valid():
+        serializer.save(user=user, restaurant=restaurant)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+def detail(req):
+    pass
 
 class RestaurantDetailView(APIView):
     def get(self, request, uuid):
