@@ -28,24 +28,24 @@ def recommendRestaurants(request):
         if len(restaurants_data) >= 10: 
             
 
-            for p in restaurants_data:
+            for place in restaurants_data:
                 if len(cleaned_result) >= 10:
                     break  
 
-                upsert_restaurant(p)  
+                upsert_restaurant(place)  
 
-                db_restaurant = Restaurant.objects.filter(place_id=p['place_id']).first()
+                db_restaurant = Restaurant.objects.filter(place_id=place['place_id']).first()
                 image_url = db_restaurant.image_url if db_restaurant else None
 
                 cleaned_result.append({
-                'name': p['name'],
-                'address': p['address'],
-                'google_rating': p.get('google_rating'),
-                'latitude': p['latitude'],
-                'longitude': p['longitude'],
-                'types': p['types'],
-                'user_ratings_total': p.get('user_ratings_total'),                
-                'place_id': p['place_id'],
+                'name': place['name'],
+                'address': place['address'],
+                'google_rating': place.get('google_rating'),
+                'latitude': place['latitude'],
+                'longitude': place['longitude'],
+                'types': place['types'],
+                'user_ratings_total': place.get('user_ratings_total'),                
+                'place_id': place['place_id'],
                 'image_url': image_url,                
             } )
     return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
