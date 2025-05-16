@@ -33,3 +33,7 @@ class UserCouponListSerializer(serializers.ModelSerializer):
             'used_at',
             'coupon',  
         ]
+class SimpleUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['user_name', 'image_url', 'uuid']
