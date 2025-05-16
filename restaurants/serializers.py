@@ -3,30 +3,22 @@ from .models import Restaurant, Review
 from users.serializers import SimpleUserSerializer
 from promotions.serializers import PromotionSerializer, CouponSerializer
 
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model= Review
-        fields=['uuid', 'user', 'restaurant', 'rating', 'content', 'image_url', 'created_at']
-        read_only_fields=['uuid', 'created_at', 'user','restaurant']
 
-    def validate(self, attrs):
+class ReviewSerializer(serializers.ModelSerializer):
+    user = SimpleUserSerializer(read_only=True)
+    image_url = serializers.URLField(source='img_url', required=False)
+
+    class Meta:
+        model = Review
+        fields = ['uuid', 'user', 'restaurant', 'rating', 'content', 'created_at', 'image_url']
+        read_only_fields = ['uuid', 'created_at', 'user', 'restaurant']
+    def create(self, validated_data):
         user = self.context['user']
         restaurant = self.context['restaurant']
 
         if Review.objects.filter(user=user, restaurant=restaurant).exists():
             raise serializers.ValidationError('該餐廳已評論過。')
-        
-        return attrs
-
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    user = SimpleUserSerializer()
-
-    class Meta:
-        model = Review
-        fields = ["user", "rating", "content", "created_at", "img_url"]
-
+        return Review.objects.create(user=user, restaurant=restaurant, **validated_data)
 
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
