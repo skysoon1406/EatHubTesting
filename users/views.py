@@ -4,8 +4,8 @@ from rest_framework import status
 from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
 import uuid
-from .models import User
-from .serializers import SignupSerializer, LoginSerializer
+from .models import User,UserCoupon
+from .serializers import SignupSerializer, LoginSerializer, UserCouponListSerializer
 from .utils import token_required
 
 # Create your views here.
@@ -96,3 +96,12 @@ class LogoutView(APIView):
         response.delete_cookie('auth_token')
 
         return response
+
+class UserCouponListView(APIView):
+    @token_required
+    def get(self, request):
+        user_uuid = request.user_uuid  # token_required 驗證後會附上這個屬性
+        user_coupons = UserCoupon.objects.filter(user__uuid=user_uuid)
+
+        serializer = UserCouponListSerializer(user_coupons, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
