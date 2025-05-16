@@ -6,8 +6,8 @@ from django.core.cache import cache
 import uuid
 from .models import User,UserCoupon
 from .serializers import SignupSerializer, LoginSerializer, UserCouponListSerializer
-from .utils import token_required
-# Create your views here.
+from .utils import token_required_cbv
+
 
 
 class SignupView(APIView):
@@ -74,7 +74,7 @@ class LoginView(APIView):
 
 
 class MeView(APIView):
-    @token_required
+    @token_required_cbv
     def get(self, request):
         return Response({'message': f'驗證成功 {request.user_uuid}'})
 
@@ -97,7 +97,7 @@ class LogoutView(APIView):
         return response
 
 class UserCouponListView(APIView):
-    @token_required
+    @token_required_cbv
     def get(self, request):
         user_uuid = request.user_uuid  # token_required 驗證後會附上這個屬性
         user_coupons = UserCoupon.objects.filter(user__uuid=user_uuid)
@@ -106,7 +106,7 @@ class UserCouponListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserCouponDeleteView(APIView):
-    @token_required
+    @token_required_cbv
     def delete(self, request, uuid):
         deleted_count, _ = UserCoupon.objects.filter(
             uuid=uuid,
