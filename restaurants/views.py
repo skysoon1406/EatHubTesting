@@ -78,8 +78,8 @@ def upsert_restaurant(place):
                     print(f"[Image Upload Error] {place_id} - {e}")
                 else:
                     print(f"[Image Fetch Failed] {place_id}") # 測試階段 確認圖片是否上傳成功 
-    else:
-        print(f"[Skip Upload] {place_id} already has image_url") # 測試階段 確認圖片是否上傳成功 
+        else:
+            print(f"[Skip Upload] {place_id} already has image_url") # 測試階段 確認圖片是否上傳成功 
 
         # 更新其他欄位
         updated = False
@@ -101,26 +101,26 @@ def upsert_restaurant(place):
         if updated:
             obj.save()
 
-        else:
-            # 資料不存在，要新建 ➜ 抓圖 + 上傳
-            if photo_ref:
-                photo_bytes = get_google_photo(photo_ref)
-                if photo_bytes:
-                    try:
-                        image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
-                    except Exception as e:
-                        print(f"[Image Upload Error] {place_id} - {e}")
+    else:
+        # 資料不存在，要新建 ➜ 抓圖 + 上傳
+        if photo_ref:
+            photo_bytes = get_google_photo(photo_ref)
+            if photo_bytes:
+                try:
+                    image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
+                except Exception as e:
+                    print(f"[Image Upload Error] {place_id} - {e}")
 
-            # 新建資料
-            Restaurant.objects.create(
-                place_id=place_id,
-                name=place.get('name'),
-                address=place.get('address'),
-                google_rating=place.get('google_rating'),
-                latitude=place.get('latitude'),
-                longitude=place.get('longitude'),
-                types=', '.join(place.get('types', [])),
-                user_ratings_total=place.get('user_ratings_total'),
-                google_photo_reference=photo_ref,
-                image_url=image_url
-            )
+        # 新建資料
+        Restaurant.objects.create(
+            place_id=place_id,
+            name=place.get('name'),
+            address=place.get('address'),
+            google_rating=place.get('google_rating'),
+            latitude=place.get('latitude'),
+            longitude=place.get('longitude'),
+            types=', '.join(place.get('types', [])),
+            user_ratings_total=place.get('user_ratings_total'),
+            google_photo_reference=photo_ref,
+            image_url=image_url
+        )
