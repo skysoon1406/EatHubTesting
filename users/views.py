@@ -44,10 +44,14 @@ class LoginView(APIView):
                     cache_key = f'user_token:{user.uuid}'
                     cache.set(cache_key, token, timeout=3600)
 
-                    response = Response({'firstName': user.first_name,
-                                            'lastName': user.last_name,
-                                            'userName': user.user_name, 
-                                            'message': '登入成功'})
+                    response = Response({
+                                            'user': {
+                                                'firstName': user.first_name,
+                                                'lastName': user.last_name,
+                                                'userName': user.user_name
+                                            },
+                                            'message': '登入成功'
+                                        })
 
                     cookie_value = f'{user.uuid}:{token}'
                     response.set_cookie(
