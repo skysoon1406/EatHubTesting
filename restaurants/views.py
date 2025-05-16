@@ -81,7 +81,7 @@ def upsert_restaurant(place):
     else:
         print(f"[Skip Upload] {place_id} already has image_url") # 測試階段 確認圖片是否上傳成功 
 
-        # 更新其他欄位（選擇性更新）
+        # 更新其他欄位
         updated = False
         if obj.google_rating != place.get('google_rating'):
             obj.google_rating = place.get('google_rating')
