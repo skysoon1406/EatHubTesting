@@ -62,18 +62,18 @@ def upsert_restaurant(place):
     image_url = None
     
 
-    obj = Restaurant.objects.filter(place_id=place_id).first()
+    restaurant = Restaurant.objects.filter(place_id=place_id).first()
 
-    if obj:
+    if restaurant:
         # 資料已存在，若 image_url 為空，才補抓圖
-        if not obj.image_url and photo_ref:
+        if not restaurant.image_url and photo_ref:
             photo_bytes = get_google_photo(photo_ref)
             if photo_bytes:
                 try:
                     print(f"[Uploading Image] for {place_id}")  # 測試階段 確認圖片是否上傳成功 
                     image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
-                    obj.image_url = image_url
-                    obj.save()
+                    restaurant.image_url = image_url
+                    restaurant.save()
                 except Exception as e:
                     print(f"[Image Upload Error] {place_id} - {e}")
                 else:
@@ -83,23 +83,23 @@ def upsert_restaurant(place):
 
         # 更新其他欄位
         updated = False
-        if obj.google_rating != place.get('google_rating'):
-            obj.google_rating = place.get('google_rating')
+        if restaurant.google_rating != place.get('google_rating'):
+            restaurant.google_rating = place.get('google_rating')
             updated = True
-        if obj.address != place.get('address'):
-            obj.address = place.get('address')
+        if restaurant.address != place.get('address'):
+            restaurant.address = place.get('address')
             updated = True
-        if obj.name != place.get('name'):
-            obj.name = place.get('name')
+        if restaurant.name != place.get('name'):
+            restaurant.name = place.get('name')
             updated = True
-        if obj.user_ratings_total != place.get('user_ratings_total'):
-            obj.user_ratings_total = place.get('user_ratings_total')
+        if restaurant.user_ratings_total != place.get('user_ratings_total'):
+            restaurant.user_ratings_total = place.get('user_ratings_total')
             updated = True
-        if obj.types != ', '.join(place.get('types', [])):
-            obj.types = ', '.join(place.get('types', []))
+        if restaurant.types != ', '.join(place.get('types', [])):
+            restaurant.types = ', '.join(place.get('types', []))
             updated = True
         if updated:
-            obj.save()
+            restaurant.save()
 
     else:
         # 資料不存在，要新建 ➜ 抓圖 + 上傳
