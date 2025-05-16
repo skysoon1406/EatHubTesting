@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
-from users.utils import token_required_fbv
+from users.utils import token_required_fbv, token_required_cbv
 from .models import Review, Restaurant
 from .serializers import ReviewSerializer
-from users.models import User
+from users.models import User, Favorite
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -113,3 +113,27 @@ def upsert_restaurant(place):
             updated = True
         if updated:
             obj.save()
+
+class FavoriteRestaurantView(APIView):
+    @token_required_cbv
+    def post(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        restaurant = get_object_or_404(Restaurant, uuid=uuid)
+
+        if Favorite.objects.filter(user=user, restaurant=restaurant).exists():
+            return Response({'success': False}, status=status.HTTP_200_OK)
+
+        Favorite.objects.create(user=user, restaurant=restaurant)
+        return Response({'success': True}, status=status.HTTP_201_CREATED)
+    
+    @token_required_cbv
+    def delete(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        restaurant = get_object_or_404(Restaurant, uuid=uuid)
+
+        favorite =  Favorite.objects.filter(user=user, restaurant=restaurant).first()
+        
+        if favorite:
+            favorite.delete()
+            return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'success': False}, status=status.HTTP_200_OK)
