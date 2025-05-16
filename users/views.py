@@ -7,7 +7,6 @@ import uuid
 from .models import User,UserCoupon
 from .serializers import SignupSerializer, LoginSerializer, UserCouponListSerializer
 from .utils import token_required
-
 # Create your views here.
 
 
@@ -105,3 +104,15 @@ class UserCouponListView(APIView):
 
         serializer = UserCouponListSerializer(user_coupons, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UserCouponDeleteView(APIView):
+    @token_required
+    def delete(self, request, uuid):
+        deleted_count, _ = UserCoupon.objects.filter(
+            uuid=uuid,
+            user__uuid=request.user_uuid
+        ).delete()
+
+        if deleted_count:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'error': '找不到這張優惠券或無權限刪除'}, status=status.HTTP_404_NOT_FOUND)
