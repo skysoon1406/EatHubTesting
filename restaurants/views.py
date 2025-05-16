@@ -1,13 +1,16 @@
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from users.utils import token_required_fbv
 from .models import Review, Restaurant
 from .serializers import ReviewSerializer
+from users.models import User
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 from utilities.place_api import text_search
 from utilities.openai_api import openai_api
-from users.models import User
-from restaurants.models import Restaurant
+from .serializers import RestaurantDetailSerializer
+
 
 @api_view(['POST'])
 def recommendRestaurants(request):
@@ -64,6 +67,12 @@ def create_review(request, restaurant_uuid):
 
 def detail(req):
     pass
+
+class RestaurantDetailView(APIView):
+    def get(self, request, uuid):
+        restaurant = get_object_or_404(Restaurant, uuid=uuid)
+        serializer = RestaurantDetailSerializer(restaurant)
+        return Response({"result": serializer.data})
 
 def upsert_restaurant(place): 
     place_id = place.get("place_id")
