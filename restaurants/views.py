@@ -65,23 +65,18 @@ def upsert_restaurant(place):
     restaurant = Restaurant.objects.filter(place_id=place_id).first()
 
     if restaurant:
-        # 資料已存在，若 image_url 為空，才補抓圖
         if not restaurant.image_url and photo_ref:
             photo_bytes = get_google_photo(photo_ref)
             if photo_bytes:
                 try:
-                    print(f"[Uploading Image] for {place_id}")  # 測試階段 確認圖片是否上傳成功 
                     image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
                     restaurant.image_url = image_url
                     restaurant.save()
                 except Exception as e:
-                    print(f"[Image Upload Error] {place_id} - {e}")
-                else:
-                    print(f"[Image Fetch Failed] {place_id}") # 測試階段 確認圖片是否上傳成功 
-        else:
-            print(f"[Skip Upload] {place_id} already has image_url") # 測試階段 確認圖片是否上傳成功 
+                    pass
+ 
 
-        # 更新其他欄位
+        
         updated = False
         if restaurant.google_rating != place.get('google_rating'):
             restaurant.google_rating = place.get('google_rating')
@@ -102,7 +97,6 @@ def upsert_restaurant(place):
             restaurant.save()
 
     else:
-        # 資料不存在，要新建 ➜ 抓圖 + 上傳
         if photo_ref:
             photo_bytes = get_google_photo(photo_ref)
             if photo_bytes:
@@ -111,7 +105,7 @@ def upsert_restaurant(place):
                 except Exception as e:
                     print(f"[Image Upload Error] {place_id} - {e}")
 
-        # 新建資料
+        
         Restaurant.objects.create(
             place_id=place_id,
             name=place.get('name'),
