@@ -4,12 +4,9 @@ from rest_framework import status
 from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
 import uuid
-from .models import User
-from .serializers import SignupSerializer, LoginSerializer
+from .models import User,UserCoupon
+from .serializers import SignupSerializer, LoginSerializer, UserCouponListSerializer
 from .utils import token_required_cbv
-
-# Create your views here.
-
 
 class SignupView(APIView):
     def post(self, request):
@@ -44,14 +41,16 @@ class LoginView(APIView):
                     cache_key = f'user_token:{user.uuid}'
                     cache.set(cache_key, token, timeout=3600)
 
-                    response = Response({
-                                            'user': {
-                                                'firstName': user.first_name,
-                                                'lastName': user.last_name,
-                                                'userName': user.user_name
-                                            },
-                                            'message': '登入成功'
-                                        })
+                    response = Response(
+                        {
+                            'user': {
+                                'firstName': user.first_name,
+                                'lastName': user.last_name,
+                                'userName': user.user_name,
+                            },
+                            'message': '登入成功',
+                        }
+                    )
 
                     cookie_value = f'{user.uuid}:{token}'
                     response.set_cookie(
@@ -65,12 +64,15 @@ class LoginView(APIView):
                     return response
                 else:
                     return Response(
-                        {'error': '密碼錯誤'}, status=status.HTTP_401_UNAUTHORIZED
+                        {'error': '密碼錯誤'},
+                        status=status.HTTP_401_UNAUTHORIZED,
                     )
             except User.DoesNotExist:
                 return Response(
-                    {'error': '使用者不存在'}, status=status.HTTP_404_NOT_FOUND
+                    {'error': '使用者不存在'},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -81,11 +83,12 @@ class MeView(APIView):
 
 
 class LogoutView(APIView):
-    def post(self, requset):
-        raw_token = requset.COOKIES.get('auth_token')
+    def post(self, request):
+        raw_token = request.COOKIES.get('auth_token')
         if not raw_token or ':' not in raw_token:
             return Response(
-                {'error': '未提供 Token'}, status=status.HTTP_400_BAD_REQUEST
+                {'error': '未提供 Token'},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         user_uuid, token = raw_token.split(':', 1)
@@ -94,5 +97,25 @@ class LogoutView(APIView):
 
         response = Response({'message': '登出成功'})
         response.delete_cookie('auth_token')
-
         return response
+
+class UserCouponListView(APIView):
+    @token_required_cbv
+    def get(self, request):
+        user_uuid = request.user_uuid  # token_required 驗證後會附上這個屬性
+        user_coupons = UserCoupon.objects.filter(user__uuid=user_uuid)
+
+        serializer = UserCouponListSerializer(user_coupons, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UserCouponDeleteView(APIView):
+    @token_required_cbv
+    def delete(self, request, uuid):
+        deleted_count, _ = UserCoupon.objects.filter(
+            uuid=uuid,
+            user__uuid=request.user_uuid
+        ).delete()
+
+        if deleted_count:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'error': '找不到這張優惠券或無權限刪除'}, status=status.HTTP_404_NOT_FOUND)
