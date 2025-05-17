@@ -64,3 +64,25 @@ API = {
 }
 
 ```
+
+POST /api/v1/coupons/{uuid}/claim/
+
+```python
+API = {
+    "success": True
+}
+```
+POST /api/v1/restaurants/{uuid}/favorite/
+
+```python
+API = {
+    "success": True
+}
+```
+DELETE /api/v1/restaurants/{uuid}/favorite/
+
+```python
+API = {
+    "success": True
+}
+```

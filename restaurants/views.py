@@ -1,9 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
-from users.utils import token_required_fbv
+from users.utils import token_required_fbv, token_required_cbv
 from .models import Review, Restaurant
 from .serializers import ReviewSerializer
-from users.models import User
+from users.models import User, Favorite
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -74,9 +74,6 @@ def create_review(request, restaurant_uuid):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def detail(req):
-    pass
-
 class RestaurantDetailView(APIView):
     def get(self, request, uuid):
         restaurant = get_object_or_404(Restaurant, uuid=uuid)
@@ -89,8 +86,7 @@ def upsert_restaurant(place):
         return
 
     photo_ref = place.get('google_photo_reference')
-    image_url = None
-    
+    image_url = None    
 
     restaurant = Restaurant.objects.filter(place_id=place_id).first()
 
@@ -104,8 +100,6 @@ def upsert_restaurant(place):
                     restaurant.save()
                 except Exception as e:
                     pass
- 
-
         
         updated = False
         if restaurant.google_rating != place.get('google_rating'):
@@ -148,3 +142,27 @@ def upsert_restaurant(place):
             google_photo_reference=photo_ref,
             image_url=image_url
         )
+
+class FavoriteRestaurantView(APIView):
+    @token_required_cbv
+    def post(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        restaurant = get_object_or_404(Restaurant, uuid=uuid)
+
+        if Favorite.objects.filter(user=user, restaurant=restaurant).exists():
+            return Response({'success': False}, status=status.HTTP_200_OK)
+
+        Favorite.objects.create(user=user, restaurant=restaurant)
+        
+        return Response({'success': True}, status=status.HTTP_201_CREATED)
+    
+    @token_required_cbv
+    def delete(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        restaurant = get_object_or_404(Restaurant, uuid=uuid)
+        favorite =  Favorite.objects.filter(user=user, restaurant=restaurant).first()
+
+        if favorite:
+            favorite.delete()
+            return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'success': False}, status=status.HTTP_200_OK)
