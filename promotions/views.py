@@ -1,7 +1,11 @@
-from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from .models import Coupon
 from .serializers import CouponSerializer
+from rest_framework.views import APIView
+from users.utils import token_required_cbv  
+from django.shortcuts import get_object_or_404
+from users.models import User, UserCoupon
+from rest_framework.response import Response
 
 """
 GET /api/v1/coupons/<uuid>/
@@ -69,3 +73,15 @@ class CouponViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
         serializer.save(restaurant=user.restaurant)
+
+class ClaimCouponView(APIView):
+    @token_required_cbv
+    def post(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        coupon = get_object_or_404(Coupon, uuid=uuid, is_archived=False)
+
+        if UserCoupon.objects.filter(user=user, coupon=coupon).exists():
+            return Response({'success': False}, status=status.HTTP_200_OK)
+        
+        UserCoupon.objects.create(user=user, coupon=coupon)
+        return Response({'success': True}, status=status.HTTP_201_CREATED)
