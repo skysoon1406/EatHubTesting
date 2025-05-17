@@ -42,6 +42,7 @@ class RestaurantDetailSerializer(serializers.Serializer):
     promotion = serializers.SerializerMethodField()
     coupon = serializers.SerializerMethodField()
     reviews = serializers.SerializerMethodField()
+    user_status = serializers.SerializerMethodField()
 
     def get_promotion(self, obj):
         promotions = obj.promotions.filter(is_archived=False).order_by("-created_at")
@@ -62,3 +63,23 @@ class RestaurantDetailSerializer(serializers.Serializer):
             if reviews.exists()
             else None
         )
+    
+    def get_user_status(self, obj):
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+
+        result = {
+            'hasFavorited': False,
+            'hasClaimedCoupon': False,
+        }
+
+        if not user or user.is_anonymous:
+            return result
+
+        result['hasFavorited'] = obj.favorited_by.filter(user=user).exists()
+
+        coupon = getattr(self, '_coupon', None)
+        if coupon:
+            result['hasClaimedCoupon'] = coupon.claimed_by.filter(user=user).exists()
+
+        return result

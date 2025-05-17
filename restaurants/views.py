@@ -81,7 +81,7 @@ class RestaurantDetailView(APIView):
     def get(self, request, uuid):
         restaurant = get_object_or_404(Restaurant, uuid=uuid)
         serializer = RestaurantDetailSerializer(restaurant)
-        return Response({"result": serializer.data})
+        return Response({"result": serializer.data}, context={"request": request})
 
 def upsert_restaurant(place): 
     place_id = place.get("place_id")
