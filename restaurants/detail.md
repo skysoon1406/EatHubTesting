@@ -56,6 +56,10 @@ API = {
             },
             ...
         ]
+        "userStatus": {
+            "hasFavorited": True,
+            "hasClaimedCoupon": False
+        }
     }
 }
 
