@@ -77,8 +77,11 @@ def create_review(request, restaurant_uuid):
 class RestaurantDetailView(APIView):
     def get(self, request, uuid):
         restaurant = get_object_or_404(Restaurant, uuid=uuid)
-        serializer = RestaurantDetailSerializer(restaurant)
-        return Response({"result": serializer.data}, context={"request": request})
+        serializer = RestaurantDetailSerializer(
+            restaurant,  # ✅ 手動包 key
+            context={"request": request}
+        )
+        return Response({"result": serializer.data})
 
 def upsert_restaurant(place): 
     place_id = place.get("place_id")
