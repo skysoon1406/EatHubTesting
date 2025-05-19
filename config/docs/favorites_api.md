@@ -20,7 +20,7 @@ Error Response [401 Unauthorized]:
 
 收藏餐廳
 
-POST /api/v1/restaurants/{uuid}/favorite/
+POST /api/v1/restaurants/{uuid}/favorites/
 
 Cookie:	auth_token={user_uuid}:{token}
 
@@ -38,7 +38,7 @@ Error Response [401 Unauthorized]:
 
 取消收藏
 
-DELETE /api/v1/restaurants/{uuid}/favorite/
+DELETE /api/v1/restaurants/{uuid}/favorites/
 
 Cookie:	auth_token={user_uuid}:{token}
 
