@@ -14,7 +14,7 @@ def parse_google_place(place):
         'google_rating': place.get('rating'),
         'latitude': place['geometry']['location']['lat'],
         'longitude': place['geometry']['location']['lng'],
-        'types': place.get('types', []),
+        'types': ",".join(place.get('types', [])),
         'place_id': place.get('place_id'),
         'user_ratings_total': place.get('user_ratings_total'),
         'google_photo_reference': (
