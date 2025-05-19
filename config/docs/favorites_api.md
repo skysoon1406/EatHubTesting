@@ -9,8 +9,8 @@ Success Response [200 OK]:
 [
   {
     "uuid": "fda8fabc-1234-4567-89ab-1234567890ab",
-    "restaurant_uuid": "9abcfabc-4567-4567-89ab-abcdef123456",
-    "created_at": "2025-05-17T09:00:00Z"
+    "restaurantUuid": "9abcfabc-4567-4567-89ab-abcdef123456",
+    "createdAt": "2025-05-17T09:00:00Z"
   }
 ]
 """
