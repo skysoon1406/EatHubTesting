@@ -55,7 +55,7 @@ def recommendRestaurants(request):
                 'user_ratings_total': place.get('user_ratings_total'),                
                 'place_id': place['place_id'],
                 'image_url': image_url,         
-                'uuid': str(db_restaurant.uuid) if db_restaurant else None,       
+                'uuid': str(db_restaurant.uuid) ,       
             } )
     return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
 
