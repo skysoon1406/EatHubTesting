@@ -9,6 +9,7 @@ class User(models.Model):
     last_name = models.CharField(max_length=50, blank=True, null=True)  # 姓氏，可空
     image_url = models.URLField(max_length=300, blank=True, null=True)  # 頭像網址，可空
     created_at = models.DateTimeField(auto_now_add=True)  # 建立時間，預設為現在
+    google_id = models.CharField(max_length=100, blank=True, null=True, unique=True) # google登入用
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # uuid
     class Role(models.TextChoices):
         MEMBER = 'member', '一般會員'
