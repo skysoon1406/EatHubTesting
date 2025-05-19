@@ -8,7 +8,7 @@ class Restaurant(models.Model):
     latitude = models.FloatField()  # 緯度
     longitude = models.FloatField()  # 經度
     phone = models.CharField(max_length=255, blank=True, null=True)  # 電話，可空
-    open_hours = models.TextField(blank=True, null=True)  # 營業時間，可空
+    open_hours = models.JSONField(blank=True, null=True)  # 營業時間，可空
     google_rating = models.FloatField(
         validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],
         blank=True,
