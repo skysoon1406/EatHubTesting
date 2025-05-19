@@ -44,6 +44,17 @@ class RestaurantDetailSerializer(serializers.Serializer):
     reviews = serializers.SerializerMethodField()
     user_status = serializers.SerializerMethodField()
 
+
+    def to_representation(self, obj):
+        restaurant_data = RestaurantSerializer(obj, context=self.context).data
+        return {
+            "restaurant": restaurant_data,
+            "promotion": self.get_promotion(obj),
+            "coupon": self.get_coupon(obj),
+            "reviews": self.get_reviews(obj),
+            "user_status": self.get_user_status(obj),
+    }
+    
     def get_promotion(self, obj):
         promotions = obj.promotions.filter(is_archived=False).order_by("-created_at")
         return (
