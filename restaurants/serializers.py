@@ -3,6 +3,10 @@ from .models import Restaurant, Review
 from users.serializers import SimpleUserSerializer
 from promotions.serializers import PromotionSerializer, CouponSerializer
 
+class FullRestaurantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Restaurant
+        fields = '__all__'
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = SimpleUserSerializer(read_only=True)
