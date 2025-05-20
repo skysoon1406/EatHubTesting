@@ -38,8 +38,7 @@ API = {
             "endedAt": "2025-05-15T12:34:56Z",
             "title": string,
             "description": string,
-            "discountType": string,
-            "discountValue": 30,
+            "discount": string,
             "uuid": string
         } or null,
         "reviews": [
@@ -72,14 +71,14 @@ API = {
     "success": True
 }
 ```
-POST /api/v1/restaurants/{uuid}/favorite/
+POST /api/v1/restaurants/{uuid}/favorites/
 
 ```python
 API = {
     "success": True
 }
 ```
-DELETE /api/v1/restaurants/{uuid}/favorite/
+DELETE /api/v1/restaurants/{uuid}/favorites/
 
 ```python
 API = {
