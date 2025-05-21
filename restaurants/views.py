@@ -2,17 +2,18 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from users.utils import token_required_fbv, token_required_cbv
 from .models import Review, Restaurant
-from .serializers import ReviewSerializer
+from .serializers import ReviewSerializer, FullRestaurantSerializer
 from users.models import User, Favorite
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from utilities.place_api import text_search
-from utilities.openai_api import openai_api
+from utilities.openai_api import openai_api, find_dish
 from restaurants.models import Restaurant
 from utilities.cloudinary_upload import upload_to_cloudinary
 from utilities.place_api import get_google_photo
 from .serializers import RestaurantDetailSerializer
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 @api_view(['POST'])
@@ -22,42 +23,63 @@ def recommendRestaurants(request):
     mains = data['mains']
     staples = data['staples']
     latitude = data['user_location']['latitude']
-    longitude = data['user_location']['longitude']  
+    longitude = data['user_location']['longitude']
+    location = f'{latitude},{longitude}'    
+    keywords = openai_api(find_dish(flavors, mains, staples))
 
-
-    location = f'{latitude},{longitude}'
-    
-    keywords = openai_api(flavors, mains, staples)
-
-    cleaned_result = [] 
+    selected_restaurants = None 
 
     for keyword in keywords:
-        restaurants_data = text_search(keyword, location, 800, count=10)
-        if len(restaurants_data) >= 10: 
-            
+        recommend_dish = keyword
+        restaurants = text_search(keyword, location, 800, count=10)
+        if len(restaurants) >= 10:
+            selected_restaurants = restaurants
+            break
+    
+    place_ids = [place['place_id'] for place in selected_restaurants]
+    existing_restaurants = Restaurant.objects.filter(place_id__in=place_ids).only("place_id", "image_url")
+    image_map = {restaurant.place_id: restaurant.image_url for restaurant in existing_restaurants if restaurant.image_url}
+    missing_image_ids = set(place_ids) - set(image_map.keys())
+    places_need_image = [place for place in selected_restaurants if place['place_id'] in missing_image_ids]
 
-            for place in restaurants_data:
-                if len(cleaned_result) >= 10:
-                    break  
+    def fetch_and_upload_image(place):
+        place_id = place['place_id']
+        photo_ref = place.get('google_photo_reference')
+        if not photo_ref:
+            return (place_id, None)
 
-                upsert_restaurant(place)  
+        photo_bytes = get_google_photo(photo_ref)
+        if not photo_bytes:
+            return (place_id, None)
 
-                db_restaurant = Restaurant.objects.filter(place_id=place['place_id']).first()
-                image_url = db_restaurant.image_url if db_restaurant else None
+        try:
+            image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
+            return (place_id, image_url)
+        except Exception:
+            return (place_id, None)
 
-                cleaned_result.append({
-                'name': place['name'],
-                'address': place['address'],
-                'google_rating': place.get('google_rating'),
-                'latitude': place['latitude'],
-                'longitude': place['longitude'],
-                'types': place['types'],
-                'user_ratings_total': place.get('user_ratings_total'),                
-                'place_id': place['place_id'],
-                'image_url': image_url,         
-                'uuid': str(db_restaurant.uuid) ,       
-            } )
-    return Response({'result': cleaned_result}, status=status.HTTP_200_OK)
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(fetch_and_upload_image, place) for place in places_need_image]
+        for future in as_completed(futures):
+            place_id, url = future.result()
+            if url:
+                image_map[place_id] = url
+    
+    restaurant_instances = []
+
+    for place in selected_restaurants:
+        place['image_url'] = image_map.get(place['place_id'])
+        restaurant, _ = Restaurant.objects.update_or_create(
+            place_id=place['place_id'],
+            defaults=place
+        )
+        restaurant_instances.append(restaurant)
+
+    serializer = FullRestaurantSerializer(restaurant_instances, many=True)
+    return Response({'result': {
+        'dish': recommend_dish,
+        'restaurants': serializer.data
+    }}, status=200)
 
 @api_view(['POST'])
 @token_required_fbv
@@ -83,69 +105,6 @@ class RestaurantDetailView(APIView):
             context={"request": request}
         )
         return Response({"result": serializer.data})
-
-def upsert_restaurant(place): 
-    place_id = place.get("place_id")
-    if not place_id:
-        return
-
-    photo_ref = place.get('google_photo_reference')
-    image_url = None    
-
-    restaurant = Restaurant.objects.filter(place_id=place_id).first()
-
-    if restaurant:
-        if not restaurant.image_url and photo_ref:
-            photo_bytes = get_google_photo(photo_ref)
-            if photo_bytes:
-                try:
-                    image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
-                    restaurant.image_url = image_url
-                    restaurant.save()
-                except Exception as e:
-                    pass
-        
-        updated = False
-        if restaurant.google_rating != place.get('google_rating'):
-            restaurant.google_rating = place.get('google_rating')
-            updated = True
-        if restaurant.address != place.get('address'):
-            restaurant.address = place.get('address')
-            updated = True
-        if restaurant.name != place.get('name'):
-            restaurant.name = place.get('name')
-            updated = True
-        if restaurant.user_ratings_total != place.get('user_ratings_total'):
-            restaurant.user_ratings_total = place.get('user_ratings_total')
-            updated = True
-        if restaurant.types != ', '.join(place.get('types', [])):
-            restaurant.types = ', '.join(place.get('types', []))
-            updated = True
-        if updated:
-            restaurant.save()
-
-    else:
-        if photo_ref:
-            photo_bytes = get_google_photo(photo_ref)
-            if photo_bytes:
-                try:
-                    image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
-                except Exception as e:
-                    pass
-
-        
-        Restaurant.objects.create(
-            place_id=place_id,
-            name=place.get('name'),
-            address=place.get('address'),
-            google_rating=place.get('google_rating'),
-            latitude=place.get('latitude'),
-            longitude=place.get('longitude'),
-            types=', '.join(place.get('types', [])),
-            user_ratings_total=place.get('user_ratings_total'),
-            google_photo_reference=photo_ref,
-            image_url=image_url
-        )
 
 class FavoriteRestaurantView(APIView):
     @token_required_cbv
