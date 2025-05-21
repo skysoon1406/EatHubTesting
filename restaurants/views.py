@@ -33,8 +33,8 @@ def recommendRestaurants(request):
     for keyword in keywords:
         recommend_dish = keyword
 
-        restaurants = text_search(keyword, location, 800, count=10)
-        if len(restaurants) >= 10:
+        restaurants = text_search(keyword, location, 800, count=12)
+        if len(restaurants) >= 12:
             selected_restaurants = restaurants
             break
 
