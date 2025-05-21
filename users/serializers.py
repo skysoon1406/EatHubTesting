@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, UserCoupon, Favorite
+from .models import User, UserCoupon
 from django.contrib.auth.hashers import make_password
 from promotions.serializers import CouponSerializer
 
@@ -36,19 +36,3 @@ class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['user_name', 'image_url', 'uuid']
-
-class FavoriteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Favorite
-        fields = ['restaurant', 'created_at']
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-
-        from restaurants.serializers import RestaurantSerializer
-        restaurant_data = RestaurantSerializer(instance.restaurant).data
-
-        data.pop('restaurant')
-        data.update(restaurant_data)
-
-        return data
