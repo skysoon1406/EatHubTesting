@@ -8,6 +8,7 @@ from .models import User,UserCoupon,Favorite
 from .serializers import SignupSerializer, LoginSerializer, UserCouponListSerializer, FavoriteSerializer
 from .utils import token_required_cbv
 from django.shortcuts import get_object_or_404
+import requests
 
 class SignupView(APIView):
     def post(self, request):
@@ -80,8 +81,16 @@ class LoginView(APIView):
 class MeView(APIView):
     @token_required_cbv
     def get(self, request):
-        return Response({'message': f'驗證成功 {request.user_uuid}'})
-
+        try:
+            user = User.objects.get(uuid=request.user_uuid)
+            return Response({
+                'message': '驗證成功',
+                'user_uuid': str(user.uuid),
+                'userName': user.user_name,
+                'email': user.email,
+            }, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': '使用者不存在'}, status=status.HTTP_404_NOT_FOUND)
 
 class LogoutView(APIView):
     def post(self, request):
@@ -128,3 +137,55 @@ class FavoriteListView(APIView):
         favorites = Favorite.objects.filter(user=user).order_by('-created_at')
         serializer = FavoriteSerializer(favorites, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+# Google登入
+class GoogleLoginView(APIView):
+    def post(self, request):
+        access_token = request.data.get('access_token')
+        if not access_token:
+            return Response({'error': '缺少 access_token'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 向 Google 拿使用者資訊
+        google_user_info_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
+        headers = {'Authorization': f'Bearer {access_token}'}
+        google_response = requests.get(google_user_info_url, headers=headers)
+
+        if google_response.status_code != 200:
+            return Response({'error': 'Google token 無效或過期'}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = google_response.json()
+        google_id = data.get('sub')
+        email = data.get('email')
+        name = data.get('name') or 'Google使用者'
+
+        if not google_id or not email:
+            return Response({'error': 'Google 回傳資料不完整'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user, created = User.objects.get_or_create(
+            google_id=google_id,
+            defaults={
+                'email': email,
+                'user_name': name,
+            }
+        )
+
+        token = str(uuid.uuid4())
+        cache.set(f'user_token:{user.uuid}', token, timeout=3600)
+
+        response = Response({
+            'message': '登入成功（Google）',
+            'user': {
+                'uuid': user.uuid,
+                'userName': user.user_name,
+                'email': user.email,
+            }
+        })
+        response.set_cookie(
+            'auth_token',
+            f'{user.uuid}:{token}',
+            httponly=True,
+            secure=False,     # 本地使用 False，上線請改 True
+            samesite='Lax',
+            max_age=3600,
+        )
+        return response
