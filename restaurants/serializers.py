@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Restaurant, Review
 from users.serializers import SimpleUserSerializer
 from promotions.serializers import PromotionSerializer, CouponSerializer
+from utilities.cloudinary_upload import upload_to_cloudinary
+import uuid
 
 class FullRestaurantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,7 +12,7 @@ class FullRestaurantSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = SimpleUserSerializer(read_only=True)
-    image_url = serializers.URLField(source='img_url', required=False)
+    image_url = serializers.URLField(required=False)
 
     class Meta:
         model = Review
@@ -19,9 +21,16 @@ class ReviewSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context['user']
         restaurant = self.context['restaurant']
+        request = self.context.get('request')
 
         if Review.objects.filter(user=user, restaurant=restaurant).exists():
             raise serializers.ValidationError('該餐廳已評論過。')
+        
+        image_file = request.FILES.get('image') if request else None
+        if image_file:
+            filename = f'review_{uuid.uuid4()}'
+            image_url = upload_to_cloudinary(image_file, filename)
+            validated_data['image_url'] = image_url
         return Review.objects.create(user=user, restaurant=restaurant, **validated_data)
 
 class RestaurantSerializer(serializers.ModelSerializer):
