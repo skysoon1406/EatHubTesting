@@ -38,11 +38,17 @@ class SimpleUserSerializer(serializers.ModelSerializer):
         fields = ['user_name', 'image_url', 'uuid']
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        from restaurants.serializers import RestaurantSerializer 
-        self._declared_fields['restaurant'] = RestaurantSerializer(read_only=True)
-        super().__init__(*args, **kwargs)
-
     class Meta:
         model = Favorite
         fields = ['restaurant', 'created_at']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        from restaurants.serializers import RestaurantSerializer
+        restaurant_data = RestaurantSerializer(instance.restaurant).data
+
+        data.pop('restaurant')
+        data.update(restaurant_data)
+
+        return data
