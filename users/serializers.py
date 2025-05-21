@@ -38,8 +38,11 @@ class SimpleUserSerializer(serializers.ModelSerializer):
         fields = ['user_name', 'image_url', 'uuid']
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    restaurant_uuid = serializers.UUIDField(source='restaurant.uuid', read_only=True)
+    def __init__(self, *args, **kwargs):
+        from restaurants.serializers import RestaurantSerializer 
+        self._declared_fields['restaurant'] = RestaurantSerializer(read_only=True)
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Favorite
-        fields = ['uuid', 'restaurant_uuid', 'created_at']
+        fields = ['restaurant', 'created_at']
