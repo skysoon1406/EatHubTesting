@@ -32,11 +32,12 @@ def recommendRestaurants(request):
 
     for keyword in keywords:
         recommend_dish = keyword
+
         restaurants = text_search(keyword, location, 800, count=10)
         if len(restaurants) >= 10:
             selected_restaurants = restaurants
             break
-    
+
     place_ids = [place['place_id'] for place in selected_restaurants]
     existing_restaurants = Restaurant.objects.filter(place_id__in=place_ids).only("place_id", "image_url")
     image_map = {restaurant.place_id: restaurant.image_url for restaurant in existing_restaurants if restaurant.image_url}
@@ -65,7 +66,7 @@ def recommendRestaurants(request):
             place_id, url = future.result()
             if url:
                 image_map[place_id] = url
-    
+
     restaurant_instances = []
 
     for place in selected_restaurants:
@@ -77,6 +78,7 @@ def recommendRestaurants(request):
         restaurant_instances.append(restaurant)
 
     serializer = FullRestaurantSerializer(restaurant_instances, many=True)
+
     return Response({'result': {
         'dish': recommend_dish,
         'restaurants': serializer.data
