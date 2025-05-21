@@ -26,7 +26,7 @@ def recommendRestaurants(request):
     latitude = data['user_location']['latitude']
     longitude = data['user_location']['longitude']
     location = f'{latitude},{longitude}'    
-    keywords = openai_api(find_dish(flavors, mains, staples))
+    keywords = openai_api(find_dish(flavors, mains, staples)).split(',')
     random.shuffle(keywords)
     selected_restaurants = None 
 
