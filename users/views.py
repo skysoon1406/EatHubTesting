@@ -5,9 +5,10 @@ from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
 import uuid
 from .models import User,UserCoupon,Favorite
-from .serializers import SignupSerializer, LoginSerializer, UserCouponListSerializer, FavoriteSerializer
+from .serializers import SignupSerializer, LoginSerializer, UserCouponListSerializer
 from .utils import token_required_cbv
 from django.shortcuts import get_object_or_404
+from restaurants.serializers import RestaurantSerializer
 
 class SignupView(APIView):
     def post(self, request):
@@ -125,6 +126,8 @@ class FavoriteListView(APIView):
     @token_required_cbv
     def get(self, request):
         user = get_object_or_404(User, uuid=request.user_uuid)
-        favorites = Favorite.objects.filter(user=user).order_by('-created_at')
-        serializer = FavoriteSerializer(favorites, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        favorites = Favorite.objects.filter(user=user).select_related('restaurant').order_by('-created_at')
+        restaurants = [f.restaurant for f in favorites]
+
+        serializer = RestaurantSerializer(restaurants, many=True)
+        return Response({"restaurants": serializer.data}, status=status.HTTP_200_OK)
