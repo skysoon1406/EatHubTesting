@@ -44,26 +44,18 @@ def recommendRestaurants(request):
     def fetch_and_upload_image(place):
         place_id = place['place_id']
         photo_ref = place.get('google_photo_reference')
-        print('ref')
-        print(photo_ref)
         if not photo_ref:
             return (place_id, None)
 
         photo_bytes = get_google_photo(photo_ref)
-        print('photo')
-        print(photo_bytes)
         if not photo_bytes:
             return (place_id, None)
 
         try:
             image_url = upload_to_cloudinary(photo_bytes, filename=place_id)
-            print('url')
-            print(image_url)
             return (place_id, image_url)
         except Exception:
             return (place_id, None)
-
-    print(image_map)
 
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = [executor.submit(fetch_and_upload_image, place) for place in places_need_image]
