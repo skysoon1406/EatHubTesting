@@ -26,15 +26,15 @@ def recommendRestaurants(request):
     latitude = data['user_location']['latitude']
     longitude = data['user_location']['longitude']
     location = f'{latitude},{longitude}'    
-    keywords = openai_api(find_dish(flavors, mains, staples))
+    keywords = openai_api(find_dish(flavors, mains, staples)).split(',')
     random.shuffle(keywords)
     selected_restaurants = None 
 
     for keyword in keywords:
         recommend_dish = keyword
 
-        restaurants = text_search(keyword, location, 800, count=10)
-        if len(restaurants) >= 10:
+        restaurants = text_search(keyword, location, 800, count=12)
+        if len(restaurants) >= 12:
             selected_restaurants = restaurants
             break
 
