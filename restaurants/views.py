@@ -8,12 +8,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from utilities.place_api import text_search
-from utilities.openai_api import openai_api
+from utilities.openai_api import openai_api, find_dish
 from restaurants.models import Restaurant
 from utilities.cloudinary_upload import upload_to_cloudinary
 from utilities.place_api import get_google_photo
 from .serializers import RestaurantDetailSerializer
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import random
 
 
 @api_view(['POST'])
@@ -25,16 +26,18 @@ def recommendRestaurants(request):
     latitude = data['user_location']['latitude']
     longitude = data['user_location']['longitude']
     location = f'{latitude},{longitude}'    
-    keywords = openai_api(flavors, mains, staples)
-
+    keywords = openai_api(find_dish(flavors, mains, staples))
+    random.shuffle(keywords)
     selected_restaurants = None 
 
     for keyword in keywords:
+        recommend_dish = keyword
+
         restaurants = text_search(keyword, location, 800, count=10)
         if len(restaurants) >= 10:
             selected_restaurants = restaurants
             break
-    
+
     place_ids = [place['place_id'] for place in selected_restaurants]
     existing_restaurants = Restaurant.objects.filter(place_id__in=place_ids).only("place_id", "image_url")
     image_map = {restaurant.place_id: restaurant.image_url for restaurant in existing_restaurants if restaurant.image_url}
@@ -63,7 +66,7 @@ def recommendRestaurants(request):
             place_id, url = future.result()
             if url:
                 image_map[place_id] = url
-    
+
     restaurant_instances = []
 
     for place in selected_restaurants:
@@ -75,7 +78,11 @@ def recommendRestaurants(request):
         restaurant_instances.append(restaurant)
 
     serializer = FullRestaurantSerializer(restaurant_instances, many=True)
-    return Response({'result': serializer.data}, status=200)
+
+    return Response({'result': {
+        'dish': recommend_dish,
+        'restaurants': serializer.data
+    }}, status=200)
 
 @api_view(['POST'])
 @token_required_fbv
