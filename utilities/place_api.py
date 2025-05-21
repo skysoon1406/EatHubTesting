@@ -51,7 +51,7 @@ def text_search(keyword, location, radius, count=61):
 
 def get_google_photo(photo_reference, max_width = 400):
     url = (
-        f'{GOOGLE_MAP_API_BASE_URL}/place/photo'
+        f'{GOOGLE_MAP_API_BASE_URL}/photo'
         f'?maxwidth={max_width}&photo_reference={photo_reference}&key={API_KEY}'
     )
 
