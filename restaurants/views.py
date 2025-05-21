@@ -94,10 +94,10 @@ def create_review(request, restaurant_uuid):
     
     user = User.objects.get(uuid =request.user_uuid)
 
-    serializer = ReviewSerializer(data=request.data, context={'user':user, 'restaurant':restaurant})
+    serializer = ReviewSerializer(data=request.data, context={'user' : user, 'restaurant' : restaurant, 'request' : request})
     if serializer.is_valid():
-        serializer.save(user=user, restaurant=restaurant)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        review = serializer.save()
+        return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RestaurantDetailView(APIView):
