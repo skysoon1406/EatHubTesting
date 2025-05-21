@@ -2,17 +2,11 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
-def openai_api(flavors, mains, staples):
-    load_dotenv()
-    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-    prompt = f'''
-    我這邊有三組字詞，分別是：
-    口味: {', '.join(flavors)}
-    主餐: {', '.join(mains)}
-    主食: {', '.join(staples)}
-    可否幫我從這三個字詞中隨機各挑出一個詞，並將這三個詞組成適合Google Map搜尋的詞語，ex:炭烤豬肉飯，總共隨機十次，回傳成由逗號分開不要空格的字串。
-    '''
+load_dotenv()
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
+def openai_api(prompt):
+    prompt = prompt
     response = client.chat.completions.create(
     model='gpt-3.5-turbo',
     messages=[{'role': 'user', 'content': prompt}],
@@ -20,4 +14,12 @@ def openai_api(flavors, mains, staples):
     max_tokens=200,
     )
 
-    return response.choices[0].message.content.split(",")
+    return response.choices[0].message.content
+
+def find_dish(flavors, mains, staples):
+    prompt = f"""
+    根據以下口味（{','.join(flavors)}）、主餐（{','.join(mains)}）、主食（{','.join(staples)}），
+    列出10道在台灣真實存在的常見料理名稱，用逗號分隔，不要加空格。
+    例如：牛丼,咖哩豬排飯,打拋豬,麻辣火鍋...
+    """
+    return prompt
