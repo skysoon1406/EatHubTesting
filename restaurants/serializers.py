@@ -86,12 +86,14 @@ class RestaurantDetailSerializer(serializers.Serializer):
         result = {
             'hasFavorited': False,
             'hasClaimedCoupon': False,
+            'hasReviewed': False
         }
 
         if not user or user.is_anonymous:
             return result
 
         result['hasFavorited'] = obj.favorited_by.filter(user=user).exists()
+        result['hasReviewed'] = obj.reviews.filter(user=user).exists()
 
         coupon = getattr(self, '_coupon', None)
         if coupon:
