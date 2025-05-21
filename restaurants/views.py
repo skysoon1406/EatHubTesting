@@ -14,6 +14,7 @@ from utilities.cloudinary_upload import upload_to_cloudinary
 from utilities.place_api import get_google_photo
 from .serializers import RestaurantDetailSerializer
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import random
 
 
 @api_view(['POST'])
@@ -26,7 +27,7 @@ def recommendRestaurants(request):
     longitude = data['user_location']['longitude']
     location = f'{latitude},{longitude}'    
     keywords = openai_api(find_dish(flavors, mains, staples))
-
+    random.shuffle(keywords)
     selected_restaurants = None 
 
     for keyword in keywords:
