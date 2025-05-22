@@ -7,12 +7,18 @@ POST /api/v1/restaurants/{restaurant_uuid}/reviews
     -格式：user_uuid:token
 
 Request Body :
+(Content-Type: application/json)
 {
     'rating':5,
     'content':'這家餐廳很好吃，環境也很棒！',
-    'image':IMG_1447.jpg / 非必填 / 上傳本地圖片（會存成網址）
+    'image_bytes': [344, 67, 21, 67,32]
+    (非必填) 圖片 byte array (圖片轉成 bytes 後的整數陣列)
 }
-備註：image是選填，如果有上傳，圖片會自動傳送到 Cloudinary ，並儲存對應網址至 image_url 欄位
+圖片大小限制：
+單張圖片大小限制為：1MB
+備註：
+image＿bytes 是選填，如果有上傳圖片會自動傳送到 Cloudinary ，並回傳對應網址。
+不支援 image_url 或是 blob:。
 
 Success Respones [201 Created]:
 {
