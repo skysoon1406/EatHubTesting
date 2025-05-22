@@ -5,7 +5,6 @@ from promotions.serializers import PromotionSerializer, CouponSerializer
 from utilities.cloudinary_upload import upload_to_cloudinary
 from django.core.files.base import ContentFile
 import uuid
-import base64
 
 class FullRestaurantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,18 +29,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         if Review.objects.filter(user=user, restaurant=restaurant).exists():
             raise serializers.ValidationError({'detail':'該餐廳已評論過。'})
         
-        image_bytes = request.data.get('image_bytes')
-        image_data = None
-
-        if image_bytes:
-            try:
-                if isinstance(image_bytes, list):
-                    image_data = bytes(image_bytes)
-                elif isinstance(image_bytes, (bytes, bytearray)):
-                    image_data = image_bytes
-                else:
-                    raise ValueError('image_bytes 需為 byte array 或 list')
-                
+        image_file = request.FILES.get('image')
+        if image_file:
+            try:   
+                image_data = image_file.read()           
                 if len(image_data) > MAX_IMAGE_SIZE:
                     raise ValueError('圖片太大，請小於 1MB')
                 
