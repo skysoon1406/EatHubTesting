@@ -105,21 +105,26 @@ def get_place_details(place_id):
     url = f'{GOOGLE_MAP_API_BASE_URL}/details/json'
     params = {
         'place_id': place_id,
-        'fields': 'formatted_phone_number,opening_hours,website',
+        'fields': 'formatted_phone_number,opening_hours',
         'language': 'zh-TW',
         'key': API_KEY
     }
 
     response = requests.get(url, params=params)
     data = response.json()
+    WEEKDAYS_EN = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]  
 
     if data.get('status') == 'OK':
-        result = data['result']
+        result = data['result']        
+        weekday_text = result.get('opening_hours', {}).get('weekday_text')
+        opening_hours = {
+            WEEKDAYS_EN[i]: text.split(":", 1)[1].strip()
+            for i, text in enumerate(weekday_text)
+        }
         return {
             'place_id': place_id,
             'phone': result.get('formatted_phone_number'),
-            'opening_hours': result.get('opening_hours', {}).get('weekday_text'),
-            'website': result.get('website'),
+            'opening_hours': opening_hours
         }
     else:
         return {
