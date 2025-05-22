@@ -23,14 +23,19 @@ def parse_google_place(place):
         )
     }
 
-def text_search(keyword, location, radius, count=61):    
-    query = keyword
-    language = 'zh-TW'
-    url = f'{GOOGLE_MAP_API_BASE_URL}/textsearch/json?query={query}&location={location}&radius={radius}&language={language}&key={API_KEY}'
+def text_search(keyword, location, radius, count=61): 
+    url = f'{GOOGLE_MAP_API_BASE_URL}/textsearch/json'
+    params = {
+        'query': keyword,
+        'location': location,
+        'radius': radius,
+        'language': 'zh-TW',
+        'key': API_KEY
+    }
     result = []
 
     while True:
-        response = requests.get(url)
+        response = requests.get(url, params=params)
         data = response.json()
         if data.get('status') != 'OK':
             break        
@@ -43,7 +48,10 @@ def text_search(keyword, location, radius, count=61):
 
         if next_page_token:
             time.sleep(3)
-            url = f'{GOOGLE_MAP_API_BASE_URL}/textsearch/json?pagetoken={next_page_token}&key={API_KEY}'
+            params = {
+                'pagetoken': next_page_token,
+                'key': API_KEY
+            }
         else:
             break
 
@@ -92,3 +100,29 @@ def nearby_search(location, radius):
             break
 
     return results
+
+def get_place_details(place_id):
+    url = f'{GOOGLE_MAP_API_BASE_URL}/details/json'
+    params = {
+        'place_id': place_id,
+        'fields': 'formatted_phone_number,opening_hours,website',
+        'language': 'zh-TW',
+        'key': API_KEY
+    }
+
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    if data.get('status') == 'OK':
+        result = data['result']
+        return {
+            'place_id': place_id,
+            'phone': result.get('formatted_phone_number'),
+            'opening_hours': result.get('opening_hours', {}).get('weekday_text'),
+            'website': result.get('website'),
+        }
+    else:
+        return {
+            'error': data.get('status'),
+            'message': data.get('error_message', '')
+        }
