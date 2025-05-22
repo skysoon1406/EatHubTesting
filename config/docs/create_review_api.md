@@ -1,4 +1,4 @@
-POST /api/v1/restaurants/{restaurant_uuid}/reviews
+POST /api/v1/restaurants/{restaurant_uuid}/reviews/
 說明：對指定餐廳新增留言，需要登入。
 
 認證方式：
@@ -11,14 +11,12 @@ Request Body :
 {
     'rating':5,
     'content':'這家餐廳很好吃，環境也很棒！',
-    'image_bytes': [344, 67, 21, 67,32]
-    (非必填) 圖片 byte array (圖片轉成 bytes 後的整數陣列)
+    'image_bytes':(非必填) 圖片會上傳至雲端
 }
-圖片大小限制：
+圖片限制：
 單張圖片大小限制為：1MB
-備註：
-image＿bytes 是選填，如果有上傳圖片會自動傳送到 Cloudinary ，並回傳對應網址。
-不支援 image_url 或是 blob:。
+超過限制：回傳錯誤訊息
+檔案欄位名稱：image
 
 Success Respones [201 Created]:
 {
