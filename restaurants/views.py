@@ -7,7 +7,7 @@ from users.models import User, Favorite
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from utilities.place_api import text_search
+from utilities.place_api import text_search, get_place_details
 from utilities.openai_api import openai_api, find_dish
 from restaurants.models import Restaurant
 from utilities.cloudinary_upload import upload_to_cloudinary
@@ -60,7 +60,7 @@ def recommendRestaurants(request):
         except Exception:
             return (place_id, None)
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         futures = [executor.submit(fetch_and_upload_image, place) for place in places_need_image]
         for future in as_completed(futures):
             place_id, url = future.result()
@@ -103,6 +103,14 @@ def create_review(request, restaurant_uuid):
 class RestaurantDetailView(APIView):
     def get(self, request, uuid):
         restaurant = get_object_or_404(Restaurant, uuid=uuid)
+
+        if not restaurant.phone or not restaurant.open_hours:
+            details = get_place_details(restaurant.place_id)
+            if 'error' not in details:
+                restaurant.phone = details.get('phone') or restaurant.phone
+                restaurant.open_hours = details.get('opening_hours')
+                restaurant.save()
+
         serializer = RestaurantDetailSerializer(
             restaurant, 
             context={"request": request}
