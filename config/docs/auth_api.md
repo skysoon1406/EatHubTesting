@@ -93,3 +93,9 @@ response
     message:登出成功
     or reeor:未提供 Token / 400
 }
+
+
+
+
+註冊新商家
+POST /api/v1/auth/merchant/signup/
