@@ -103,6 +103,7 @@ Request Body :
     'userName':'text3'
     'email':'text3@example.com'
     'password':'text323'
+    'role':'merchant'
 }
 
 Success Respones [201 Created]:
