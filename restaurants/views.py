@@ -1,13 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
-from users.utils import token_required_fbv, token_required_cbv
+from users.utils import token_required_fbv, token_required_cbv, optional_token_cbv
 from .models import Review, Restaurant
 from .serializers import ReviewSerializer, FullRestaurantSerializer
 from users.models import User, Favorite
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from utilities.place_api import text_search
+from utilities.place_api import text_search, get_place_details
 from utilities.openai_api import openai_api, find_dish
 from restaurants.models import Restaurant
 from utilities.cloudinary_upload import upload_to_cloudinary
@@ -60,7 +60,7 @@ def recommendRestaurants(request):
         except Exception:
             return (place_id, None)
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         futures = [executor.submit(fetch_and_upload_image, place) for place in places_need_image]
         for future in as_completed(futures):
             place_id, url = future.result()
@@ -94,15 +94,24 @@ def create_review(request, restaurant_uuid):
     
     user = User.objects.get(uuid =request.user_uuid)
 
-    serializer = ReviewSerializer(data=request.data, context={'user':user, 'restaurant':restaurant})
+    serializer = ReviewSerializer(data=request.data, context={'user' : user, 'restaurant' : restaurant, 'request' : request})
     if serializer.is_valid():
-        serializer.save(user=user, restaurant=restaurant)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        review = serializer.save()
+        return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RestaurantDetailView(APIView):
+    @optional_token_cbv
     def get(self, request, uuid):
         restaurant = get_object_or_404(Restaurant, uuid=uuid)
+
+        if not restaurant.phone or not restaurant.open_hours:
+            details = get_place_details(restaurant.place_id)
+            if 'error' not in details:
+                restaurant.phone = details.get('phone') or restaurant.phone
+                restaurant.open_hours = details.get('opening_hours')
+                restaurant.save()
+
         serializer = RestaurantDetailSerializer(
             restaurant, 
             context={"request": request}
