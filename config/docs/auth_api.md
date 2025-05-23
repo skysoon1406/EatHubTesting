@@ -93,3 +93,30 @@ response
     message:登出成功
     or reeor:未提供 Token / 400
 }
+
+
+註冊新商家。
+POST /api/v1/auth/merchant/signup
+
+Request Body :
+{
+    'userName':'text3'
+    'email':'text3@example.com'
+    'password':'text323'
+    'role':'merchant'
+}
+
+Success Respones [201 Created]:
+{
+    'message':'商家註冊成功',
+    'user':{
+        'uuid':"ec13b219-xxxx-xxxx-xxxx-abcdef123456",
+        'userName':'text3',
+        'email':'text3@example.com',
+        'role':'merchant'
+    }
+}
+
+Error Respones [400 Bad Request]:
+    -欄位格式錯誤
+    -email已存在
