@@ -2,26 +2,46 @@ from rest_framework import serializers
 from .models import Restaurant, Review
 from users.serializers import SimpleUserSerializer
 from promotions.serializers import PromotionSerializer, CouponSerializer
+from utilities.cloudinary_upload import upload_to_cloudinary
+from django.core.files.base import ContentFile
+import uuid
 
 class FullRestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
         fields = '__all__'
 
+MAX_IMAGE_SIZE = 1 * 1024 * 1024
 class ReviewSerializer(serializers.ModelSerializer):
     user = SimpleUserSerializer(read_only=True)
-    image_url = serializers.URLField(source='img_url', required=False)
+    image_url = serializers.URLField(read_only=True)
 
     class Meta:
         model = Review
         fields = ['uuid', 'user', 'restaurant', 'rating', 'content', 'created_at', 'image_url']
-        read_only_fields = ['uuid', 'created_at', 'user', 'restaurant']
+        read_only_fields = ['uuid', 'created_at', 'user', 'restaurant', 'image_url']
+
     def create(self, validated_data):
         user = self.context['user']
         restaurant = self.context['restaurant']
+        request = self.context.get('request')
 
         if Review.objects.filter(user=user, restaurant=restaurant).exists():
-            raise serializers.ValidationError('該餐廳已評論過。')
+            raise serializers.ValidationError({'detail':'該餐廳已評論過。'})
+        
+        image_file = request.FILES.get('image')
+        if image_file:
+            try:   
+                image_data = image_file.read()           
+                if len(image_data) > MAX_IMAGE_SIZE:
+                    raise ValueError('圖片太大，請小於 1MB')
+                
+                filename = f'review_{uuid.uuid4()}.jpg'
+                image_url = upload_to_cloudinary(ContentFile(image_data, name=filename), filename)
+                validated_data['image_url'] = image_url
+            except Exception as e:
+                raise serializers.ValidationError({'image_bytes': f'圖片處理失敗: {str(e)}'})
+            
         return Review.objects.create(user=user, restaurant=restaurant, **validated_data)
 
 class RestaurantSerializer(serializers.ModelSerializer):
@@ -34,7 +54,7 @@ class SimpleReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ["user", "rating", "content", "created_at", "img_url"]
+        fields = ["user", "rating", "content", "created_at", "image_url"]
 
 class SimpleRestaurantSerializer(serializers.ModelSerializer):
     class Meta:
