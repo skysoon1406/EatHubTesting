@@ -81,7 +81,7 @@ class RestaurantDetailSerializer(serializers.Serializer):
     
     def get_user_status(self, obj):
         request = self.context.get('request')
-        user = getattr(request, 'user', None)
+        user_uuid = getattr(request, 'user_uuid', None)
 
         result = {
             'hasFavorited': False,
@@ -89,14 +89,14 @@ class RestaurantDetailSerializer(serializers.Serializer):
             'hasReviewed': False
         }
 
-        if not user or user.is_anonymous:
+        if not user_uuid:
             return result
 
-        result['hasFavorited'] = obj.favorited_by.filter(user=user).exists()
-        result['hasReviewed'] = obj.reviews.filter(user=user).exists()
+        result['hasFavorited'] = obj.favorited_by.filter(user__uuid=user_uuid).exists()
+        result['hasReviewed'] = obj.reviews.filter(user__uuid=user_uuid).exists()
 
         coupon = getattr(self, '_coupon', None)
         if coupon:
-            result['hasClaimedCoupon'] = coupon.claimed_by.filter(user=user).exists()
+            result['hasClaimedCoupon'] = coupon.claimed_by.filter(user__uuid=user_uuid).exists()
 
         return result
