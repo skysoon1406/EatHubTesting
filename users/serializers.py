@@ -36,3 +36,19 @@ class SimpleUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['user_name', 'image_url', 'uuid']
+
+
+
+
+class MerchantSignupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'password', 'user_name', 'license_url']
+
+    def validate_password(self, value):
+        return make_password(value)
+
+    def create(self, validated_data):
+        # 強制指定角色為商家
+        validated_data['role'] = User.Role.MERCHANT
+        return User.objects.create(**validated_data)

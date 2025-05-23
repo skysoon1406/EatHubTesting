@@ -29,6 +29,22 @@ class SignupView(APIView):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class MerchantSignupView(APIView):
+    def post(self, request):
+        from .serializers import MerchantSignupSerializer  # 放這裡避免循環 import 問題
+        serializer = MerchantSignupSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                'message': '商家註冊成功',
+                'user': {
+                    'uuid': user.uuid,
+                    'userName': user.user_name,
+                    'email': user.email,
+                    'role': user.role,
+                },
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
     def post(self, request):
