@@ -50,3 +50,21 @@ def token_required_fbv(view_func):
         return view_func(request, *args, **kwargs)
 
     return warpper
+
+def optional_token_cbv(view_func):
+    @wraps(view_func)
+    def wrapper(self, request, *args, **kwargs):
+        raw_token = request.COOKIES.get('auth_token')
+        request.user_uuid = None
+
+        if raw_token and ':' in raw_token:
+            try:
+                user_uuid, token = raw_token.split(':', 1)
+                cache_key = f'user_token:{user_uuid}'
+                if cache.get(cache_key) == token:
+                    request.user_uuid = user_uuid
+            except Exception:
+                pass
+
+        return view_func(self, request, *args, **kwargs)
+    return wrapper
