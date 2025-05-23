@@ -12,8 +12,13 @@ Request Body :
     'image_url'：JPG/PNG/HEIC 限制 1MB 以內 /非必填,
 }
 備註：
-使用multipart/form-data傳送資料
-image_url實際會由後端上傳並轉為 URL 儲存
+    使用multipart/form-data傳送資料
+    image_url實際會由後端上傳並轉為 URL 儲存
+
+限制條件：
+    一般商家：1則
+    VIP商家：3則
+嘗試超出上限時，API拒絕建立動態訊息，回傳403
 
 Success Respones [201 Created]:
 {
@@ -31,3 +36,5 @@ Error Respones [404 Not Found]:
     -"image": ["圖片太大，請小於 1MB"]
 Error Respones [403 Forbidden]:
     -"error": "請使用餐廳帳戶登入。"
+    -"error": "非 VIP 商家最多只能建立 1 則活動"
+    -"error": "VIP 商家最多只能建立 3 則活動"
