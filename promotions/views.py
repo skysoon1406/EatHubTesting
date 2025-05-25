@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from .models import Coupon
-from .serializers import CouponSerializer
+from .serializers import CouponSerializer, UserCouponUsageSerializer
 from rest_framework.views import APIView
 from users.utils import token_required_cbv  
 from django.shortcuts import get_object_or_404
@@ -85,3 +85,29 @@ class ClaimCouponView(APIView):
         
         UserCoupon.objects.create(user=user, coupon=coupon)
         return Response({'success': True}, status=status.HTTP_201_CREATED)
+    
+class CouponUsageView(APIView):
+    @token_required_cbv
+    def get(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        coupon = get_object_or_404(Coupon, uuid=uuid)
+
+        if user.restaurant != coupon.restaurant:
+            return Response(
+                {
+                    'success': False,
+                    'message': '無觀看權限'
+                },
+                status=403
+            )
+
+        user_coupons = UserCoupon.objects.filter(coupon=coupon).select_related('user')
+        serializer = UserCouponUsageSerializer(user_coupons, many=True)
+
+        return Response(
+            {
+                'title': coupon.title,
+                'usages': serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
