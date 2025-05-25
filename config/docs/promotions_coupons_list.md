@@ -41,9 +41,9 @@ API = {
 }
 ```
 
-
-POST /api/v1/merchant/promotions/<uuid:uuid>/archive/
-POST /api/v1/merchant/coupons/<uuid:uuid>/archive/
+軟刪除最新動態、優惠券
+PATCH /api/v1/merchant/promotions/<uuid:uuid>/
+PATCH /api/v1/merchant/coupons/<uuid:uuid>/
 
 
 
