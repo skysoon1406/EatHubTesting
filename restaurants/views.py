@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
-from users.utils import token_required_fbv, token_required_cbv
+from users.utils import token_required_fbv, token_required_cbv, optional_token_cbv
 from .models import Review, Restaurant
 from .serializers import ReviewSerializer, FullRestaurantSerializer
 from users.models import User, Favorite
@@ -101,6 +101,7 @@ def create_review(request, restaurant_uuid):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class RestaurantDetailView(APIView):
+    @optional_token_cbv
     def get(self, request, uuid):
         restaurant = get_object_or_404(Restaurant, uuid=uuid)
 
