@@ -1,6 +1,6 @@
 最新動態與優惠券清單
 
-GET /api/v1/merchant/promotions-coupons/ 
+GET /api/v1/merchant/dashboard/ 
 
 ```python
 
