@@ -117,10 +117,12 @@ def get_place_details(place_id):
     if data.get('status') == 'OK':
         result = data['result']        
         weekday_text = result.get('opening_hours', {}).get('weekday_text')
-        opening_hours = {
+        opening_hours = (
+            {
             WEEKDAYS_EN[i]: text.split(":", 1)[1].strip()
             for i, text in enumerate(weekday_text)
-        }
+            } if weekday_text else {}
+        )
         return {
             'place_id': place_id,
             'phone': result.get('formatted_phone_number'),
