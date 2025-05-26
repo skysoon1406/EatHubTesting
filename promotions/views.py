@@ -89,9 +89,14 @@ class ClaimCouponView(APIView):
 class MerchantView(APIView):
     @token_required_cbv
     def get(self, request):
-        user = User.objects.get(uuid=request.user_uuid)
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        if user.role not in ['merchant', 'vip_merchant']:
+            return Response({"error": "目前非商家帳號，請先建立店家"}, status=status.HTTP_403_FORBIDDEN)
+        
         restaurant = user.restaurant
-
+        if not restaurant:
+            return Response({"error": "此商家尚未綁定餐廳"}, status=status.HTTP_400_BAD_REQUEST)
+        
         promotions = Promotion.objects.filter(restaurant=restaurant, is_archived=False)
         coupons = Coupon.objects.filter(restaurant=restaurant, is_archived=False)
 
