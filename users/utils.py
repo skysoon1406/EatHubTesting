@@ -2,8 +2,8 @@ from django.core.cache import cache
 from rest_framework.response import Response
 from rest_framework import status
 from functools import wraps
-
-
+from django.shortcuts import get_object_or_404
+from users.models import User
 
 # CBV驗證裝飾器
 def token_required_cbv(view_func):
@@ -66,5 +66,18 @@ def optional_token_cbv(view_func):
             except Exception:
                 pass
 
+        return view_func(self, request, *args, **kwargs)
+    return wrapper
+
+def check_merchant_role(view_func):
+    @wraps(view_func)
+    def wrapper(self, request, *args, **kwargs):
+        
+        user = get_object_or_404(User, uuid=request.user_uuid)
+
+        if user.role not in ['merchant', 'vip_merchant']:
+            return Response({'error': '您不是商家用戶'}, status=403)
+
+        request.user = user
         return view_func(self, request, *args, **kwargs)
     return wrapper
