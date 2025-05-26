@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
-from .models import Coupon
-from .serializers import CouponSerializer
+from .models import Coupon, Promotion
+from .serializers import CouponSerializer, PromotionSerializer, DashboardCouponSerializer
 from rest_framework.views import APIView
 from users.utils import token_required_cbv  
 from django.shortcuts import get_object_or_404
@@ -85,3 +85,23 @@ class ClaimCouponView(APIView):
         
         UserCoupon.objects.create(user=user, coupon=coupon)
         return Response({'success': True}, status=status.HTTP_201_CREATED)
+    
+class MerchantDashboardView(APIView):
+    @token_required_cbv
+    def get(self, request):
+        user = User.objects.get(uuid=request.user_uuid)
+        restaurant = user.restaurant
+
+        promotions = Promotion.objects.filter(restaurant=restaurant, is_archived=False)
+        coupons = Coupon.objects.filter(restaurant=restaurant, is_archived=False)
+
+        return Response({
+            "result": {
+                "restaurant": {
+                    "uuid": str(restaurant.uuid),
+                    "name": restaurant.name,
+                },
+                "promotions": PromotionSerializer(promotions, many=True).data,
+                "coupons":DashboardCouponSerializer(coupons, many=True).data
+            }
+        })
