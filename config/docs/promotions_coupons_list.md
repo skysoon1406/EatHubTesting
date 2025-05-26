@@ -1,6 +1,6 @@
 最新動態與優惠券清單
 
-GET /api/v1/merchant/dashboard/ 
+GET /api/v1/merchants/me/ 
 
 ```python
 
@@ -42,8 +42,8 @@ API = {
 ```
 
 軟刪除最新動態、優惠券
-PATCH /api/v1/merchant/promotions/<uuid:uuid>/
-PATCH /api/v1/merchant/coupons/<uuid:uuid>/
+PATCH /api/v1/promotions/<uuid:uuid>/
+PATCH /api/v1/coupons/<uuid:uuid>/
 
 
 
