@@ -68,7 +68,6 @@ class RestaurantDetailSerializer(serializers.Serializer):
     reviews = serializers.SerializerMethodField()
     user_status = serializers.SerializerMethodField()
 
-
     def to_representation(self, obj):
         restaurant_data = RestaurantSerializer(obj, context=self.context).data
         return {
@@ -89,6 +88,7 @@ class RestaurantDetailSerializer(serializers.Serializer):
     
     def get_coupon(self, obj):
         coupon = obj.coupons.filter(is_archived=False).order_by("-started_at").first()
+        self._coupon = coupon
         return CouponSerializer(coupon).data if coupon else None
 
     def get_reviews(self, obj):
@@ -102,7 +102,6 @@ class RestaurantDetailSerializer(serializers.Serializer):
     def get_user_status(self, obj):
         request = self.context.get('request')
         user_uuid = getattr(request, 'user_uuid', None)
-
         result = {
             'hasFavorited': False,
             'hasClaimedCoupon': False,
@@ -114,8 +113,8 @@ class RestaurantDetailSerializer(serializers.Serializer):
 
         result['hasFavorited'] = obj.favorited_by.filter(user__uuid=user_uuid).exists()
         result['hasReviewed'] = obj.reviews.filter(user__uuid=user_uuid).exists()
-
         coupon = getattr(self, '_coupon', None)
+        
         if coupon:
             result['hasClaimedCoupon'] = coupon.claimed_by.filter(user__uuid=user_uuid).exists()
 
