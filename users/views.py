@@ -47,9 +47,11 @@ class LoginView(APIView):
                     response = Response(
                         {
                             'user': {
-                                'firstName': user.first_name,
-                                'lastName': user.last_name,
+                                'firstName': user.first_name or '',
+                                'lastName': user.last_name or '',
                                 'userName': user.user_name,
+                                'role': user.role,
+                                'restaurantUuid': user.restaurant.uuid if user.restaurant else None,
                             },
                             'message': '登入成功',
                         }
