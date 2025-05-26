@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Coupon, Promotion
-from users.models import UserCoupon
 
 
 class CouponSerializer(serializers.ModelSerializer):
@@ -33,7 +32,7 @@ class PromotionSerializer(serializers.ModelSerializer):
         model = Promotion
         exclude = ['id']
 
-class DashboardCouponSerializer(CouponSerializer):
+class MerchantCouponSerializer(CouponSerializer):
     redeemed_count = serializers.SerializerMethodField()
     used_count = serializers.SerializerMethodField()
 

@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import MerchantDashboardView
+from .views import MerchantView
 
 urlpatterns = [
-    path('me/', MerchantDashboardView.as_view()),
+    path('me/', MerchantView.as_view()),
 ]
