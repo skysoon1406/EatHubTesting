@@ -35,3 +35,5 @@ class Coupon(models.Model):
     is_archived = models.BooleanField(default=False)  # 是否封存，預設 False
     started_at = models.DateTimeField(blank=True, null=True)  # 開始時間，可空
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)  # uuid
+    def __str__(self):
+        return f"{self.title} - {self.restaurant.name}"
