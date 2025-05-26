@@ -7,7 +7,6 @@ from users.utils import token_required_cbv
 from users.models import User, UserCoupon
 from .models import Coupon, Promotion
 from .serializers import CouponSerializer, PromotionsCreateSerializer
-from django.utils.decorators import method_decorator
 
 """
 GET /api/v1/coupons/<uuid>/
