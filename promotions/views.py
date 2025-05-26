@@ -88,8 +88,8 @@ class ClaimCouponView(APIView):
         UserCoupon.objects.create(user=user, coupon=coupon)
         return Response({'success': True}, status=status.HTTP_201_CREATED)
     
-@method_decorator(token_required_cbv, name='dispatch')
 class PromotionCreateView(APIView):
+    @token_required_cbv
     def post(self, request):
         user = get_object_or_404(User, uuid=request.user_uuid)
 
