@@ -36,9 +36,13 @@ Request Body :
 
 Success Respones [200 OK]:
 {
-    'firstName':'t',
-    'lastName':'ext3',
-    'userName':'text3'
+    "user": {    
+        'firstName':'t',
+        'lastName':'ext3',
+        'userName':'text3'
+        "role": "member",
+        "restaurantId": null  
+    },
     'message':'登入成功'
 }
 

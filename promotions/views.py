@@ -1,4 +1,6 @@
 from rest_framework import viewsets, status
+from .models import Coupon
+from .serializers import CouponSerializer, UserCouponUsageSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -74,3 +76,28 @@ class PromotionCreateView(APIView):
             promotion = serializer.save()
             return Response(PromotionsCreateSerializer(promotion).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class CouponUsageView(APIView):
+    @token_required_cbv
+    def get(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        coupon = get_object_or_404(Coupon, uuid=uuid)
+
+        if user.restaurant != coupon.restaurant:
+            return Response(
+                {
+                    'success': False,
+                    'message': '無觀看權限'
+                },
+                status=403
+            )
+
+        user_coupons = UserCoupon.objects.filter(coupon=coupon).select_related('user')
+        serializer = UserCouponUsageSerializer(user_coupons, many=True)
+
+        return Response(
+            {
+                'title': coupon.title,
+                'usages': serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
