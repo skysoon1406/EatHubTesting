@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import MerchantView
+from .views import PromotionDetailView
 
 urlpatterns = [
-    path('me/', MerchantView.as_view()),
+    path('<uuid:uuid>/', PromotionDetailView.as_view()),
 ]
