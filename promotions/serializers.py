@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Coupon, Promotion
-
+from users.models import UserCoupon
 
 class CouponSerializer(serializers.ModelSerializer):
     restaurant = serializers.SerializerMethodField()
@@ -20,8 +20,7 @@ class CouponSerializer(serializers.ModelSerializer):
             discount_rate = round(10 - obj.discount_value / 10, 1)
             return f"{discount_rate}折 折價券"
         else:
-            return "未知折扣類型"
-        
+            return "未知折扣類型"       
 
     def get_restaurant(self, obj):
         from restaurants.serializers import SimpleRestaurantSerializer
@@ -31,3 +30,19 @@ class PromotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Promotion
         exclude = ['id']
+
+class MerchantCouponSerializer(CouponSerializer):
+    redeemed_count = serializers.SerializerMethodField()
+    used_count = serializers.SerializerMethodField()
+
+    def get_redeemed_count(self, obj):
+        return obj.claimed_by.count()
+
+    def get_used_count(self, obj):
+        return obj.claimed_by.filter(is_used=True).count()
+class UserCouponUsageSerializer(serializers.ModelSerializer):
+    user = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = UserCoupon
+        fields = ['uuid', 'user', 'is_used']
