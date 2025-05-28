@@ -96,3 +96,15 @@ class CouponUsageView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+class CouponDetailView(APIView):
+    @token_required_cbv
+    def get(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+
+        coupon = get_object_or_404(Promotion, uuid=uuid, is_archived=False) 
+        if user.restaurant != coupon.restaurant:
+            return Response({'error': '您無權限查看此最新動態'}, status=status.HTTP_403_FORBIDDEN) 
+        serializer = CouponSerializer(coupon)
+        return Response({'result':serializer.data}, status=status.HTTP_200_OK)
