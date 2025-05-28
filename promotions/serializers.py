@@ -31,6 +31,15 @@ class PromotionSerializer(serializers.ModelSerializer):
         model = Promotion
         exclude = ['id']
 
+class MerchantCouponSerializer(CouponSerializer):
+    redeemed_count = serializers.SerializerMethodField()
+    used_count = serializers.SerializerMethodField()
+
+    def get_redeemed_count(self, obj):
+        return obj.claimed_by.count()
+
+    def get_used_count(self, obj):
+        return obj.claimed_by.filter(is_used=True).count()
 class UserCouponUsageSerializer(serializers.ModelSerializer):
     user = serializers.EmailField(source='user.email')
 
