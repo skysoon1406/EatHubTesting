@@ -50,10 +50,10 @@ class ClaimCouponView(APIView):
 
 class PromotionDetailView(APIView):
     @token_required_cbv
-    def get(self, request, uuid):
+    def get(self, request, promotion_uuid):
         user = get_object_or_404(User, uuid=request.user_uuid)
         
-        promotion = get_object_or_404(Promotion, uuid=uuid, is_archived=False) 
+        promotion = get_object_or_404(Promotion, uuid=promotion_uuid, is_archived=False) 
         if user.restaurant != promotion.restaurant:
             return Response({'error': '您無權限查看此最新動態'}, status=status.HTTP_403_FORBIDDEN) 
         serializer = PromotionSerializer(promotion)
