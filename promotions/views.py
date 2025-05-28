@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
-from .models import Coupon,Promotion
-from .serializers import CouponSerializer,PromotionSerializer
+from .models import Coupon, Promotion
+from .serializers import CouponSerializer, UserCouponUsageSerializer, PromotionSerializer, MerchantCouponSerializer
 from rest_framework.views import APIView
 from users.utils import token_required_cbv  
 from django.shortcuts import get_object_or_404
@@ -59,3 +59,52 @@ class PromotionDetailView(APIView):
         serializer = PromotionSerializer(promotion)
         return Response({'result':serializer.data}, status=status.HTTP_200_OK)
 
+class MerchantView(APIView):
+    @token_required_cbv
+    def get(self, request):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        if user.role not in ['merchant', 'vip_merchant']:
+            return Response({"error": "目前非商家帳號，請先建立店家"}, status=status.HTTP_403_FORBIDDEN)
+        
+        restaurant = user.restaurant
+        if not restaurant:
+            return Response({"error": "此商家尚未綁定餐廳"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        promotions = Promotion.objects.filter(restaurant=restaurant, is_archived=False)
+        coupons = Coupon.objects.filter(restaurant=restaurant, is_archived=False)
+
+        return Response({
+            "result": {
+                "restaurant": {
+                    "uuid": str(restaurant.uuid),
+                    "name": restaurant.name,
+                },
+                "promotions": PromotionSerializer(promotions, many=True).data,
+                "coupons":MerchantCouponSerializer(coupons, many=True).data
+            }
+        })
+class CouponUsageView(APIView):
+    @token_required_cbv
+    def get(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        coupon = get_object_or_404(Coupon, uuid=uuid)
+
+        if user.restaurant != coupon.restaurant:
+            return Response(
+                {
+                    'success': False,
+                    'message': '無觀看權限'
+                },
+                status=403
+            )
+
+        user_coupons = UserCoupon.objects.filter(coupon=coupon).select_related('user')
+        serializer = UserCouponUsageSerializer(user_coupons, many=True)
+
+        return Response(
+            {
+                'title': coupon.title,
+                'usages': serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
