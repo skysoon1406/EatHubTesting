@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from .models import Coupon, Promotion
 from .serializers import CouponSerializer, UserCouponUsageSerializer, PromotionSerializer, MerchantCouponSerializer
 from rest_framework.views import APIView
-from users.utils import token_required_cbv  
+from users.utils import token_required_cbv  ,check_merchant_role
 from django.shortcuts import get_object_or_404
 from users.models import User, UserCoupon
 from rest_framework.response import Response
@@ -100,6 +100,7 @@ class CouponUsageView(APIView):
 
 class CouponDetailView(APIView):
     @token_required_cbv
+    @check_merchant_role
     def get(self, request, uuid):
         user = get_object_or_404(User, uuid=request.user_uuid)
 
