@@ -128,6 +128,7 @@ class PromotionDetailView(APIView):
         serializer = PromotionSerializer(promotion)
         return Response({'result':serializer.data}, status=status.HTTP_200_OK)
     
+    @token_required_cbv
     def patch(self, request, uuid):
         user = get_object_or_404(User, uuid=request.user_uuid)
         
