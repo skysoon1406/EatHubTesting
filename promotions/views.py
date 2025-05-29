@@ -108,4 +108,8 @@ class CouponDetailView(APIView):
         if user.restaurant != coupon.restaurant:
             return Response({'error': '您無權限查看此最新動態'}, status=status.HTTP_403_FORBIDDEN) 
         serializer = CouponSerializer(coupon)
-        return Response({'result':serializer.data}, status=status.HTTP_200_OK)
+        result = serializer.data 
+        result['total_claimed'] = UserCoupon.objects.filter(coupon=coupon).count()
+        result['total_used'] = UserCoupon.objects.filter(coupon=coupon, is_used=True).count()
+
+        return Response({'result':result}, status=status.HTTP_200_OK)
