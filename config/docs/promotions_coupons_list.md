@@ -1,6 +1,6 @@
 最新動態與優惠券清單
 
-GET /api/v1/merchants/me/ 
+GET /api/v1/merchants/me/
 
 ```python
 
@@ -34,20 +34,58 @@ API = {
             "uuid": "f234e567-89bc-01de-gh23-456789012345",
             "redeemed_count": 42,
             "used_count": 18,
-           
-            } 
-        ]          
+
+            }
+        ]
     }
 }
 ```
 
 軟刪除最新動態、優惠券
 PATCH /api/v1/promotions/<uuid:uuid>/
+GET /api/v1/promotions/<uuid:uuid>/
+
+```PYTHON
+{
+  "result": {
+    "uuid": "ed07f9ea-98c7-43d9-93a0-b9e9e1ab2b3a",
+    "title": "夏季優惠大放送",
+    "description": "指定套餐買一送一！活動期間內所有套餐都享有優惠，歡迎來店體驗。",
+    "started_at": "2025-06-01T00:00:00Z",
+    "ended_at": "2025-06-15T23:59:59Z",
+    "image_url": "https://res.cloudinary.com/xxx/promo1.jpg",
+    "created_at": "2025-05-23T12:00:00Z",
+    "updated_at": "2025-05-23T12:00:00Z",
+    "is_active": true
+  }
+}
+```
+
 PATCH /api/v1/coupons/<uuid:uuid>/
 
 
 
 
-
-
-
+GET /api/v1/coupons/<uuid:uuid>/
+API = {
+    "result": {
+        "restaurant": {
+            "name": "金元寶炒飯",
+            "imageUrl": "https://res.cloudinary.com/dtdsmynjy/image/upload/v1747368408/restaurants/ChIJl9MJJgmpQjQRrzEhGT-_Zp0.jpg"
+        },
+        "discount": "100元 折價券",
+        "serialNumber": "CouponTest20250528",
+        "endedAt": "2025-05-31T03:28:42Z",
+        "createdAt": "2025-05-28T03:30:38.164597Z",
+        "title": "測試餐廳Coupon",
+        "description": "TEST",
+        "discountType": "金額",
+        "discountValue": 100,
+        "total": 500,
+        "isArchived": false,
+        "startedAt": "2025-05-01T03:30:37Z",
+        "uuid": "b65f0069-3bf5-4b0c-bdfa-96cc98040db4"
+        "totalClaimed": 1,
+        "totalUsed": 0
+    }
+}
