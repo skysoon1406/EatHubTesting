@@ -47,6 +47,7 @@ class ClaimCouponView(APIView):
         UserCoupon.objects.create(user=user, coupon=coupon)
         return Response({'success': True}, status=status.HTTP_201_CREATED)
     
+
 class MerchantView(APIView):
     @token_required_cbv
     def get(self, request):
@@ -117,6 +118,16 @@ class CouponDetailView(APIView):
         return Response({"success": True}, status=status.HTTP_200_OK)
 
 class PromotionDetailView(APIView):
+    @token_required_cbv
+    def get(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        
+        promotion = get_object_or_404(Promotion, uuid=uuid, is_archived=False) 
+        if user.restaurant != promotion.restaurant:
+            return Response({'error': '您無權限查看此最新動態'}, status=status.HTTP_403_FORBIDDEN) 
+        serializer = PromotionSerializer(promotion)
+        return Response({'result':serializer.data}, status=status.HTTP_200_OK)
+    
     @token_required_cbv
     def patch(self, request, uuid):
         user = get_object_or_404(User, uuid=request.user_uuid)
