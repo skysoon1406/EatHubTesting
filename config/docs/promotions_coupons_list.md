@@ -67,5 +67,7 @@ API = {
         "isArchived": false,
         "startedAt": "2025-05-01T03:30:37Z",
         "uuid": "b65f0069-3bf5-4b0c-bdfa-96cc98040db4"
+        "totalClaimed": 1,
+        "totalUsed": 0
     }
 }
