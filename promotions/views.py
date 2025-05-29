@@ -48,17 +48,6 @@ class ClaimCouponView(APIView):
         return Response({'success': True}, status=status.HTTP_201_CREATED)
     
 
-class PromotionDetailView(APIView):
-    @token_required_cbv
-    def get(self, request, promotion_uuid):
-        user = get_object_or_404(User, uuid=request.user_uuid)
-        
-        promotion = get_object_or_404(Promotion, uuid=promotion_uuid, is_archived=False) 
-        if user.restaurant != promotion.restaurant:
-            return Response({'error': '您無權限查看此最新動態'}, status=status.HTTP_403_FORBIDDEN) 
-        serializer = PromotionSerializer(promotion)
-        return Response({'result':serializer.data}, status=status.HTTP_200_OK)
-
 class MerchantView(APIView):
     @token_required_cbv
     def get(self, request):
@@ -108,3 +97,50 @@ class CouponUsageView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+class CouponDetailView(APIView):
+    @token_required_cbv
+    def patch(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+    
+        if user.role not in ['merchant', 'vip_merchant']:
+            return Response({"error": "目前非商家帳號"}, status=status.HTTP_403_FORBIDDEN)
+
+        restaurant = user.restaurant
+        if not restaurant:
+            return Response({"error": "此商家尚未綁定餐廳"}, status=status.HTTP_400_BAD_REQUEST)
+
+        coupon = get_object_or_404(Coupon, uuid=uuid, restaurant=restaurant)
+
+        coupon.is_archived = True
+        coupon.save()
+
+        return Response({"success": True}, status=status.HTTP_200_OK)
+
+class PromotionDetailView(APIView):
+    @token_required_cbv
+    def get(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        
+        promotion = get_object_or_404(Promotion, uuid=uuid, is_archived=False) 
+        if user.restaurant != promotion.restaurant:
+            return Response({'error': '您無權限查看此最新動態'}, status=status.HTTP_403_FORBIDDEN) 
+        serializer = PromotionSerializer(promotion)
+        return Response({'result':serializer.data}, status=status.HTTP_200_OK)
+    
+    def patch(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        
+        if user.role not in ['merchant', 'vip_merchant']:
+            return Response({"error": "目前非商家帳號"}, status=status.HTTP_403_FORBIDDEN)
+
+        restaurant = user.restaurant
+        if not restaurant:
+            return Response({"error": "此商家尚未綁定餐廳"}, status=status.HTTP_400_BAD_REQUEST)
+
+        promotion = get_object_or_404(Promotion, uuid=uuid, restaurant=restaurant)
+
+        promotion.is_archived = True
+        promotion.save()
+
+        return Response({"success": True}, status=status.HTTP_200_OK)

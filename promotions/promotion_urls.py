@@ -3,6 +3,6 @@ from .views import PromotionDetailView
 
 urlpatterns = [
     
-    path('<uuid:promotion_uuid>/', PromotionDetailView.as_view()),
+    path('<uuid:uuid>/', PromotionDetailView.as_view()),
     
 ]
