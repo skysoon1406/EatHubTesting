@@ -3,7 +3,7 @@ from .views import CreateCouponView, ClaimCouponView,CouponUsageView,CouponDetai
 
 urlpatterns = [
     path('', CreateCouponView.as_view()),
-    path('<uuid:coupon_uuid>/',CouponDetailView.as_view()),
+    path('<uuid:uuid>/', CouponDetailView.as_view()),
     path('<uuid:uuid>/claim/', ClaimCouponView.as_view()),
     path('<uuid:uuid>/usage/', CouponUsageView.as_view()),
 ]
