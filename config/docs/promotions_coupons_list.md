@@ -62,3 +62,30 @@ GET /api/v1/promotions/<uuid:uuid>/
 ```
 
 PATCH /api/v1/coupons/<uuid:uuid>/
+
+
+
+
+GET /api/v1/coupons/<uuid:uuid>/
+API = {
+    "result": {
+        "restaurant": {
+            "name": "金元寶炒飯",
+            "imageUrl": "https://res.cloudinary.com/dtdsmynjy/image/upload/v1747368408/restaurants/ChIJl9MJJgmpQjQRrzEhGT-_Zp0.jpg"
+        },
+        "discount": "100元 折價券",
+        "serialNumber": "CouponTest20250528",
+        "endedAt": "2025-05-31T03:28:42Z",
+        "createdAt": "2025-05-28T03:30:38.164597Z",
+        "title": "測試餐廳Coupon",
+        "description": "TEST",
+        "discountType": "金額",
+        "discountValue": 100,
+        "total": 500,
+        "isArchived": false,
+        "startedAt": "2025-05-01T03:30:37Z",
+        "uuid": "b65f0069-3bf5-4b0c-bdfa-96cc98040db4"
+        "totalClaimed": 1,
+        "totalUsed": 0
+    }
+}

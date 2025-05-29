@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from .models import Coupon, Promotion
 from .serializers import CouponSerializer, UserCouponUsageSerializer, PromotionSerializer, MerchantCouponSerializer
 from rest_framework.views import APIView
-from users.utils import token_required_cbv  
+from users.utils import token_required_cbv  ,check_merchant_role
 from django.shortcuts import get_object_or_404
 from users.models import User, UserCoupon
 from rest_framework.response import Response
@@ -100,6 +100,21 @@ class CouponUsageView(APIView):
 
 class CouponDetailView(APIView):
     @token_required_cbv
+    @check_merchant_role
+    def get(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+
+        coupon = get_object_or_404(Coupon, uuid=uuid, is_archived=False) 
+        if user.restaurant != coupon.restaurant:
+            return Response({'error': '您無權限查看此最新動態'}, status=status.HTTP_403_FORBIDDEN) 
+        serializer = CouponSerializer(coupon)
+        result = serializer.data 
+        result['total_claimed'] = UserCoupon.objects.filter(coupon=coupon).count()
+        result['total_used'] = UserCoupon.objects.filter(coupon=coupon, is_used=True).count()
+
+        return Response({'result':result}, status=status.HTTP_200_OK)
+
+    @token_required_cbv
     def patch(self, request, uuid):
         user = get_object_or_404(User, uuid=request.user_uuid)
     
@@ -145,3 +160,4 @@ class PromotionDetailView(APIView):
         promotion.save()
 
         return Response({"success": True}, status=status.HTTP_200_OK)
+
