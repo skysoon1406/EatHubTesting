@@ -6,8 +6,8 @@ from users.models import User
 # Create your models here.
 class Product(models.Model):
     PLAN_CHOICES = [
-        ('monthly', '月訂閱'),
-        ('yearly', '年訂閱'),
+        ('monthly', 'monthly'),
+        ('yearly', 'yearly'),
     ]
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=100)

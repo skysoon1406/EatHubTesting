@@ -7,9 +7,13 @@ from users.utils import optional_token_cbv
 from users.models import User
 import uuid
 import requests
+import json
+import hmac
+import hashlib
+import base64
 from django.conf import settings
 
-# Create your views here.
+
 class SubscriptionCreateView(APIView):
     @optional_token_cbv
     def post(self, request):
@@ -17,23 +21,23 @@ class SubscriptionCreateView(APIView):
         try:
             user = User.objects.get(uuid=user_uuid)
         except User.DoesNotExist:
-            return Response({'error':'找不倒使用者'}, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response({'error': '找不到使用者'}, status=status.HTTP_404_NOT_FOUND)
+
         product_id = request.data.get('product_id')
         amount_input = request.data.get('amount')
-        
+
         if not product_id or not amount_input:
-            return Response({'error':'缺少參數'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': '缺少參數'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             amount = int(amount_input)
         except ValueError:
             return Response({'error': '金額需是數字'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             product = Product.objects.get(uuid=product_id)
         except Product.DoesNotExist:
-            return Response({'error':'找不到對應產品'}, status=status.HTTP_404_NOT_FOUND)
-        
+            return Response({'error': '找不到對應產品'}, status=status.HTTP_404_NOT_FOUND)
+
         today = timezone.now().date()
         next_date = today + timezone.timedelta(days=product.interval_days)
 
@@ -54,15 +58,8 @@ class SubscriptionCreateView(APIView):
             product=product
         )
 
-        headers={
-            'Content-Type': 'application/json',
-            'X-LINE-ChannelId': settings.LINEPAY_CHANNEL_ID,
-            'X-LINE-ChannelSecret': settings.LINEPAY_CHANNEL_SECRET,
-        }
-        print("📦 Content-Type:", headers.get('Content-Type'))
-        print("📦 X-LINE-ChannelId:", headers.get('X-LINE-ChannelId'))
-        print("📦 X-LINE-ChannelSecret:", headers.get('X-LINE-ChannelSecret'))
-        body ={
+        # LINE PAY body
+        body = {
             'amount': amount,
             'currency': 'TWD',
             'orderId': order_id,
@@ -70,31 +67,53 @@ class SubscriptionCreateView(APIView):
                 {
                     'id': str(uuid.uuid4()),
                     'amount': amount,
-                    'name':product.name,
+                    'name': product.name,
                     'products': [
                         {
-                            'name':product.name,
-                            'quantity':1,
-                            'price':amount
+                            'name': product.name,
+                            'quantity': 1,
+                            'price': amount
                         }
                     ]
                 }
             ],
-            'redirectUrls':{
-                "confirmUrl": "https://localhost:8000/api/payments/confirm",
-                "cancelUrl": "https://localhost:8000/payment-cancel",
+            "redirectUrls": {
+                "confirmUrl": "https://sandbox-api-pay.line.me/orders/confirm",
+                "cancelUrl":  "https://sandbox-api-pay.line.me/orders/cancel"
             }
         }
+        # HMAC 簽章計算
+        api_path = "/v3/payments/request"
+        nonce = uuid.uuid4().hex
+        # body_str = json.dumps(body, separators=(',', ':'), ensure_ascii=True)
+        body_str = json.dumps(body)
+        message = settings.LINEPAY_CHANNEL_SECRET + api_path + body_str + nonce
+        breakpoint()
+        signature = base64.b64encode(
+            hmac.new(
+                settings.LINEPAY_CHANNEL_SECRET.encode('utf-8'),
+                message.encode('utf-8'),
+                hashlib.sha256
+            ).digest()
+        ).decode('utf-8')
+        
+        # 設定 header
+        headers = {
+            "Content-Type": "application/json",
+            "X-LINE-ChannelId": settings.LINEPAY_CHANNEL_ID,
+            "X-LINE-Authorization-Nonce": nonce,
+            "X-LINE-Authorization": signature,
+        }
+
         try:
             res = requests.post(
-                "https://sandbox-api-pay.line.me/v3/payments/request",
+                f"{settings.LINEPAY_API_BASE_URL}/v3/payments/request",
                 headers=headers,
                 json=body
             )
             data = res.json()
         except requests.exceptions.RequestException as e:
             return Response({'error': '連線 LINE PAY 失敗', 'details': str(e)}, status=status.HTTP_502_BAD_GATEWAY)
-        
         if data.get('returnCode') == '0000':
             return Response({
                 'order_id': order_id,

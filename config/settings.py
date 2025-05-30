@@ -19,6 +19,9 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+LINEPAY_CHANNEL_ID = os.getenv('LINEPAY_CHANNEL_ID')
+LINEPAY_CHANNEL_SECRET = os.getenv('LINEPAY_CHANNEL_SECRET')
+LINEPAY_API_BASE_URL = os.getenv('LINEPAY_API_BASE_URL')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -48,6 +51,7 @@ INSTALLED_APPS = [
     'users',
     'restaurants',
     'promotions',
+    'payments',
 ]
 
 MIDDLEWARE = [
