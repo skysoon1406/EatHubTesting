@@ -15,6 +15,8 @@ from utilities.place_api import get_google_photo
 from .serializers import RestaurantDetailSerializer
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import random
+from django.utils import timezone
+from django.db.models import Q
 
 
 @api_view(['POST'])
@@ -78,6 +80,24 @@ def recommendRestaurants(request):
         restaurant_instances.append(restaurant)
 
     serializer = FullRestaurantSerializer(restaurant_instances, many=True)
+
+    data = serializer.data
+
+    # 加上 hasAvailableCoupon 欄位
+    now = timezone.now()
+    for restaurant_dict, restaurant_instance in zip(data, restaurant_instances):
+        coupons = restaurant_instance.coupons.filter(
+            is_archived=False,
+        ).filter(
+            Q(started_at__lte=now) | Q(started_at__isnull=True),
+            Q(ended_at__gte=now) | Q(ended_at__isnull=True),
+        )
+
+        has_available_coupon = any(
+            coupon.total is None or coupon.claimed_by.count() < coupon.total
+            for coupon in coupons
+        )
+        restaurant_dict['hasAvailableCoupon'] = has_available_coupon
 
     return Response({'result': {
         'dish': recommend_dish,
