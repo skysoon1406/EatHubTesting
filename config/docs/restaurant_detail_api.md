@@ -25,13 +25,16 @@ API = {
             "website": string | null,
             "userRatingsTotal": 123
         },
-        "promotion": {
-            "title": string,
-            "description": string,
-            "startedAt": "2025-05-15T12:34:56Z",
-            "endedAt": "2025-05-15T12:34:56Z",
-            "imageUrl": string | null
-        } or null,
+        "promotion": [
+            {
+                "title": string,
+                "description": string,
+                "startedAt": "2025-05-15T12:34:56Z",
+                "endedAt": "2025-05-15T12:34:56Z",
+                "imageUrl": string | null
+            },
+            ...
+        ]or null,
         "coupon": [
             {
                 "serialNumber": string,
