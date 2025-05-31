@@ -36,6 +36,7 @@ class Subscription (models.Model):
 
 class PaymentOrder(models.Model):
     order_id = models.CharField(max_length=50, unique=True, editable=False)
+    transaction_id = models.CharField(max_length=50, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payment_orders' )
     subscription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True, blank=True, related_name='payment_orders')
     product = models.ForeignKey(Product, on_delete=models.PROTECT, default=1)
