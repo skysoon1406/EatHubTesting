@@ -4,12 +4,9 @@ from users.serializers import SimpleUserSerializer
 from promotions.serializers import PromotionSerializer, CouponSerializer
 from utilities.cloudinary_upload import upload_to_cloudinary
 from django.core.files.base import ContentFile
+from django.utils import timezone
+from django.db.models import Case, When, Value, IntegerField
 import uuid
-
-class FullRestaurantSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Restaurant
-        fields = '__all__'
 
 MAX_IMAGE_SIZE = 1 * 1024 * 1024
 class ReviewSerializer(serializers.ModelSerializer):
@@ -62,24 +59,21 @@ class SimpleRestaurantSerializer(serializers.ModelSerializer):
         fields = ['name','image_url']
 
 class RestaurantDetailSerializer(serializers.Serializer):
-    restaurant = RestaurantSerializer()
+    restaurant = serializers.SerializerMethodField()
     promotion = serializers.SerializerMethodField()
     coupon = serializers.SerializerMethodField()
     reviews = serializers.SerializerMethodField()
     user_status = serializers.SerializerMethodField()
 
-    def to_representation(self, obj):
-        restaurant_data = RestaurantSerializer(obj, context=self.context).data
-        return {
-            "restaurant": restaurant_data,
-            "promotion": self.get_promotion(obj),
-            "coupon": self.get_coupon(obj),
-            "reviews": self.get_reviews(obj),
-            "user_status": self.get_user_status(obj),
-    }
+    def get_restaurant(self, obj):
+        return RestaurantSerializer(obj).data
     
     def get_promotion(self, obj):
-        promotions = obj.promotions.filter(is_archived=False).order_by("-created_at")
+        now = timezone.now()
+        promotions = obj.promotions.filter(
+            is_archived=False,
+            ended_at__gte=now
+        ).order_by("-created_at",)
         return (
             PromotionSerializer(promotions, many=True).data
             if promotions.exists()
@@ -87,12 +81,27 @@ class RestaurantDetailSerializer(serializers.Serializer):
         )
     
     def get_coupon(self, obj):
-        coupon = obj.coupons.filter(is_archived=False).order_by("-started_at").first()
-        self._coupon = coupon
-        return CouponSerializer(coupon).data if coupon else None
+        now = timezone.now()
+        coupons = obj.coupons.filter(
+            is_archived=False,
+            ended_at__gte=now
+        ).order_by("-started_at")
+        self._coupons = coupons
+        return CouponSerializer(coupons, many=True).data if coupons.exists() else None
 
     def get_reviews(self, obj):
-        reviews = obj.reviews.select_related("user").all()
+        reviews = obj.reviews.select_related("user")
+        request = self.context.get('request')
+        user_uuid = getattr(request, 'user_uuid', None)
+
+        if user_uuid:
+            reviews = reviews.annotate(
+                priority=Case(
+                    When(user__uuid=user_uuid, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField()
+                )
+            ).order_by('priority', 'created_at')
         return (
             SimpleReviewSerializer(reviews, many=True).data
             if reviews.exists()
@@ -102,9 +111,10 @@ class RestaurantDetailSerializer(serializers.Serializer):
     def get_user_status(self, obj):
         request = self.context.get('request')
         user_uuid = getattr(request, 'user_uuid', None)
+        coupons = getattr(self, '_coupons', [])
         result = {
             'hasFavorited': False,
-            'hasClaimedCoupon': False,
+            'hasClaimedCoupon': {str(coupon.uuid): False for coupon in coupons},
             'hasReviewed': False
         }
 
@@ -113,9 +123,9 @@ class RestaurantDetailSerializer(serializers.Serializer):
 
         result['hasFavorited'] = obj.favorited_by.filter(user__uuid=user_uuid).exists()
         result['hasReviewed'] = obj.reviews.filter(user__uuid=user_uuid).exists()
-        coupon = getattr(self, '_coupon', None)
         
-        if coupon:
-            result['hasClaimedCoupon'] = coupon.claimed_by.filter(user__uuid=user_uuid).exists()
+        for coupon in coupons:
+            if coupon:
+                result['hasClaimedCoupon'][str(coupon.uuid)] = coupon.claimed_by.filter(user__uuid=user_uuid).exists()
 
         return result
