@@ -63,7 +63,11 @@ API = {
         ]
         "userStatus": {
             "hasFavorited": True,
-            "hasClaimedCoupon": [False, False, ...]
+            "hasClaimedCoupon": {
+                "uuid": False,
+                "uuid2": True,
+                ...
+            }
             "hasReviewed": False
         }
     }
