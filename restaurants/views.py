@@ -16,7 +16,7 @@ from .serializers import RestaurantDetailSerializer
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import random
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Count
 
 
 @api_view(['POST'])
@@ -91,12 +91,14 @@ def recommendRestaurants(request):
         ).filter(
             Q(started_at__lte=now) | Q(started_at__isnull=True),
             Q(ended_at__gte=now) | Q(ended_at__isnull=True),
+        ).annotate(
+            claimed_count=Count('claimed_by')
         )
-
         has_available_coupon = any(
-            coupon.total is None or coupon.claimed_by.count() < coupon.total
+            coupon.total is None or coupon.claimed_count < coupon.total
             for coupon in coupons
         )
+        
         restaurant_dict['hasAvailableCoupon'] = has_available_coupon
 
     return Response({'result': {
