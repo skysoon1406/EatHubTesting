@@ -9,7 +9,7 @@ from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from payments.models import PaymentOrder, Subscription, Product
+from payments.models import PaymentOrder, Subscription, Product, PaymentLog
 from users.models import User
 from users.utils import optional_token_cbv
 
@@ -97,8 +97,22 @@ class SubscriptionCreateView(APIView):
             res = requests.post(f"{settings.LINEPAY_API_BASE_URL}{api_path}", headers=headers, json=body)
             data = res.json()
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+            PaymentLog.objects.create(
+                payment_order=payment_order,
+                request_payload=body,
+                response_payload={"error": str(e)},
+                return_code='EXCEPTION',
+                return_message='Request failed'
+            )
+            return Response({'error': str(e)}, status=status.HTTP_502_BAD_GATEWAY)
 
+        PaymentLog.objects.create(
+            payment_order=payment_order,
+            request_payload=body,
+            response_payload=data,
+            return_code=data.get('returnCode', 'N/A'),
+            return_message=data.get('returnMessage', 'N/A')
+        )
         if data.get("returnCode") == "0000":
             return Response({
                 "order_id": order_id,
@@ -154,8 +168,23 @@ class LinePayConfirmView(APIView):
             res = requests.post(url, headers=headers, json=body)
             data = res.json()
         except Exception as e:
+            PaymentLog.objects.create(
+                payment_order=payment_order,
+                request_payload=body,
+                response_payload={"error": str(e)},
+                return_code='EXCEPTION',
+                return_message='Request failed'
+            )
             return Response({'error': str(e)}, status=status.HTTP_502_BAD_GATEWAY)
 
+        PaymentLog.objects.create(
+            payment_order=payment_order,
+            request_payload=body,
+            response_payload=data,
+            return_code=data.get('returnCode', 'N/A'),
+            return_message=data.get('returnMessage', 'N/A')
+        )
+        
         if data.get('returnCode') == '0000':
             payment_order.is_paid = True
             payment_order.transaction_id = transaction_id

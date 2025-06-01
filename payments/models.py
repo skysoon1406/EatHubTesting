@@ -55,3 +55,13 @@ class PaymentOrder(models.Model):
         status = '已付款' if self.is_paid else '未付款'
         return f'{self.order_id} - {status}'
     
+class PaymentLog(models.Model):
+    payment_order = models.ForeignKey('PaymentOrder', on_delete=models.CASCADE, related_name='logs')
+    request_payload = models.JSONField()
+    response_payload = models.JSONField()
+    return_code = models.CharField(max_length=10)
+    return_message = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Log for Order {self.payment_order.order_id} at {self.created_at}"
