@@ -1,22 +1,20 @@
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from users.utils import token_required_fbv, token_required_cbv, optional_token_cbv
-from .models import Review, Restaurant
-from .serializers import ReviewSerializer, RestaurantSerializer
+from .models import Restaurant
+from .serializers import ReviewSerializer, FullRestaurantSerializer
 from users.models import User, Favorite
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from utilities.place_api import text_search, get_place_details
 from utilities.openai_api import openai_api, find_dish
-from restaurants.models import Restaurant
 from utilities.cloudinary_upload import upload_to_cloudinary
 from utilities.place_api import get_google_photo
 from .serializers import RestaurantDetailSerializer
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import random
-from django.utils import timezone
-from django.db.models import Q, Count
+
 
 @api_view(['POST'])
 def recommendRestaurants(request):
@@ -78,27 +76,8 @@ def recommendRestaurants(request):
         )
         restaurant_instances.append(restaurant)
 
-    serializer = RestaurantSerializer(restaurant_instances, many=True)
-
+    serializer = FullRestaurantSerializer(restaurant_instances, many=True)
     data = serializer.data
-
-    # 加上 hasAvailableCoupon 欄位
-    now = timezone.now()
-    for restaurant_dict, restaurant_instance in zip(data, restaurant_instances):
-        coupons = restaurant_instance.coupons.filter(
-            is_archived=False,
-        ).filter(
-            Q(started_at__lte=now) | Q(started_at__isnull=True),
-            Q(ended_at__gte=now) | Q(ended_at__isnull=True),
-        ).annotate(
-            claimed_count=Count('claimed_by')
-        )
-        has_available_coupon = any(
-            coupon.total is None or coupon.claimed_count < coupon.total
-            for coupon in coupons
-        )
-        
-        restaurant_dict['hasAvailableCoupon'] = has_available_coupon
 
     return Response({'result': {
         'dish': recommend_dish,
