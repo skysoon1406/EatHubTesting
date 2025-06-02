@@ -68,6 +68,7 @@ class MerchantView(APIView):
                     "uuid": str(restaurant.uuid),
                     "name": restaurant.name,
                 },
+                "role": user.role, 
                 "promotions": PromotionSerializer(promotions, many=True).data,
                 "coupons":MerchantCouponSerializer(coupons, many=True).data
             }
