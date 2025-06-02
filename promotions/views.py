@@ -73,8 +73,8 @@ class MerchantView(APIView):
                     "uuid": str(restaurant.uuid),
                     "name": restaurant.name,
                 },
-                "role": user.role, 
-                "merchant_limit_status": {
+                "merchant_status": {
+                    "role": user.role, 
                     "is_coupon_limit_reached": is_coupon_limit_reached,
                     "is_promotion_limit_reached": is_promotion_limit_reached,
                 },
