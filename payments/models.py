@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from datetime import timedelta
 import uuid
 from users.models import User
 
@@ -18,6 +19,10 @@ class Product(models.Model):
     def __str__(self):
         return f'{self.name} - {self.get_plan_type_display()}'
     
+class PaymentMethod(models.TextChoices):
+    ECPAY = "ecpay", "綠界"
+    LINEPAY = "linepay", "LINE Pay"
+
 class Subscription (models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
     product= models.ForeignKey(Product, on_delete=models.PROTECT, default=1)
@@ -27,8 +32,11 @@ class Subscription (models.Model):
     is_active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
-        if not self.next_payment_date:
-            self.next_payment_date = timezone.now().date() + timezone.timedelta(days=self.product.interval_days)
+        today = timezone.now().date()
+        if not self.ended_at:
+            self.ended_at = today + timedelta(days=self.product.interval_days-1)
+            self.next_payment_date = self.ended_at + timedelta(days=1)
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -43,6 +51,7 @@ class PaymentOrder(models.Model):
     amount = models.IntegerField()
     is_paid = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    method = models.CharField(max_length=20, choices=PaymentMethod.choices)
 
     def save(self, *args, **kwargs):
         if not self.order_id:
@@ -62,6 +71,7 @@ class PaymentLog(models.Model):
     return_code = models.CharField(max_length=10)
     return_message = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
+    method = models.CharField(max_length=20, choices=PaymentMethod.choices)
 
     def __str__(self):
         return f"Log for Order {self.payment_order.order_id} at {self.created_at}"
