@@ -74,9 +74,10 @@ class MerchantView(APIView):
                     "name": restaurant.name,
                 },
                 "role": user.role, 
-                "is_coupon_limit_reached": is_coupon_limit_reached,
-                "is_promotion_limit_reached": is_promotion_limit_reached,
-
+                "merchant_limit_status": {
+                    "is_coupon_limit_reached": is_coupon_limit_reached,
+                    "is_promotion_limit_reached": is_promotion_limit_reached,
+                },
                 "promotions": PromotionSerializer(promotions, many=True).data,
                 "coupons":MerchantCouponSerializer(coupons, many=True).data
             }
