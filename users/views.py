@@ -9,7 +9,7 @@ from .serializers import SignupSerializer, LoginSerializer, UserCouponListSerial
 from .utils import token_required_cbv
 from django.shortcuts import get_object_or_404
 import requests
-from restaurants.serializers import RestaurantSerializer
+from restaurants.serializers import FullRestaurantSerializer
 
 class SignupView(APIView):
     def post(self, request):
@@ -141,7 +141,7 @@ class FavoriteListView(APIView):
         favorites = Favorite.objects.filter(user=user).select_related('restaurant').order_by('-created_at')
         restaurants = [f.restaurant for f in favorites]
 
-        serializer = RestaurantSerializer(restaurants, many=True)
+        serializer = FullRestaurantSerializer(restaurants, many=True)
         return Response({"restaurants": serializer.data}, status=status.HTTP_200_OK)
 
 # Google登入
