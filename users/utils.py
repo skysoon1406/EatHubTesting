@@ -8,7 +8,7 @@ from users.models import User
 # CBV驗證裝飾器
 def token_required_cbv(view_func):
     @wraps(view_func)
-    def warpper(self, request, *args, **kwargs):
+    def warpper(self, request, *args, **kwargs):       
         raw_token = request.COOKIES.get('auth_token')
         if not raw_token or ':' not in raw_token:
             return Response(

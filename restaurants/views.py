@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from users.utils import token_required_fbv, token_required_cbv, optional_token_cbv
 from .models import Review, Restaurant
-from .serializers import ReviewSerializer, FullRestaurantSerializer
+from .serializers import ReviewSerializer, RestaurantSerializer
 from users.models import User, Favorite
 from rest_framework.response import Response
 from rest_framework import status
@@ -17,7 +17,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import random
 from django.utils import timezone
 from django.db.models import Q, Count
-
 
 @api_view(['POST'])
 def recommendRestaurants(request):
@@ -79,7 +78,7 @@ def recommendRestaurants(request):
         )
         restaurant_instances.append(restaurant)
 
-    serializer = FullRestaurantSerializer(restaurant_instances, many=True)
+    serializer = RestaurantSerializer(restaurant_instances, many=True)
 
     data = serializer.data
 
