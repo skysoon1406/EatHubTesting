@@ -62,11 +62,21 @@ class MerchantView(APIView):
         promotions = Promotion.objects.filter(restaurant=restaurant, is_archived=False)
         coupons = Coupon.objects.filter(restaurant=restaurant, is_archived=False)
 
+        max_count = 3 if user.role == 'vip_merchant' else 1
+        is_coupon_limit_reached = coupons.count() >= max_count
+        is_promotion_limit_reached = promotions.count() >= max_count
+
+
         return Response({
             "result": {
                 "restaurant": {
                     "uuid": str(restaurant.uuid),
                     "name": restaurant.name,
+                },
+                "merchant_status": {
+                    "role": user.role, 
+                    "is_coupon_limit_reached": is_coupon_limit_reached,
+                    "is_promotion_limit_reached": is_promotion_limit_reached,
                 },
                 "promotions": PromotionSerializer(promotions, many=True).data,
                 "coupons":MerchantCouponSerializer(coupons, many=True).data
