@@ -19,6 +19,10 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+LINEPAY_CHANNEL_ID = os.getenv('LINEPAY_CHANNEL_ID')
+LINEPAY_CHANNEL_SECRET = os.getenv('LINEPAY_CHANNEL_SECRET')
+LINEPAY_API_BASE_URL = os.getenv('LINEPAY_API_BASE_URL')
+PUBLIC_DOMAIN = os.getenv('PUBLIC_DOMAIN')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -29,7 +33,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1',]
 
 
 # Application definition
@@ -48,6 +52,7 @@ INSTALLED_APPS = [
     'users',
     'restaurants',
     'promotions',
+    'payments',
 ]
 
 MIDDLEWARE = [
@@ -153,3 +158,5 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser'
     ),
 }
+
+
