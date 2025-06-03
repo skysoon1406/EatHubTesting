@@ -13,6 +13,14 @@ import requests
 from restaurants.serializers import RestaurantSerializer
 from utilities.email_util import send_email
 import os
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})
+
 
 class SignupView(APIView):
     def post(self, request):
@@ -67,7 +75,7 @@ class LoginView(APIView):
                         httponly=True,
                         max_age=3600,
                         secure=True,
-                        samesite='lax',
+                        samesite=None,
                     )
                     return response
                 else:
@@ -229,8 +237,8 @@ class GoogleLoginView(APIView):
             'auth_token',
             f'{user.uuid}:{token}',
             httponly=True,
-            secure=False,     # 本地使用 False，上線請改 True
-            samesite='Lax',
+            secure=True,
+            samesite=None,
             max_age=3600,
         )
         return response
