@@ -140,3 +140,18 @@ class FavoriteRestaurantView(APIView):
             favorite.delete()
             return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
         return Response({'success': False}, status=status.HTTP_200_OK)
+
+class RecentlyViewedRestaurantsView(APIView):
+    def get(self, request):
+        uuid_list = request.query_params.getlist("uuids")
+
+        if not uuid_list:
+            return Response({"result": []}, status=status.HTTP_200_OK)
+
+        restaurants = Restaurant.objects.filter(uuid__in=uuid_list)
+        restaurant_map = {str(r.uuid): r for r in restaurants}
+
+        sorted_restaurants = [restaurant_map[uuid] for uuid in uuid_list if uuid in restaurant_map]
+
+        serializer = FullRestaurantSerializer(sorted_restaurants, many=True)
+        return Response({"result": serializer.data}, status=status.HTTP_200_OK)
