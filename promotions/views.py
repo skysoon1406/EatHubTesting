@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from .models import Coupon, Promotion
 from .serializers import CouponSerializer, UserCouponUsageSerializer, PromotionSerializer, MerchantCouponSerializer
 from rest_framework.views import APIView
-from users.utils import token_required_cbv  
+from users.utils import token_required_cbv  ,check_merchant_role
 from django.shortcuts import get_object_or_404
 from users.models import User, UserCoupon
 from rest_framework.response import Response
@@ -47,6 +47,7 @@ class ClaimCouponView(APIView):
         UserCoupon.objects.create(user=user, coupon=coupon)
         return Response({'success': True}, status=status.HTTP_201_CREATED)
     
+
 class MerchantView(APIView):
     @token_required_cbv
     def get(self, request):
@@ -61,11 +62,21 @@ class MerchantView(APIView):
         promotions = Promotion.objects.filter(restaurant=restaurant, is_archived=False)
         coupons = Coupon.objects.filter(restaurant=restaurant, is_archived=False)
 
+        max_count = 3 if user.role == 'vip_merchant' else 1
+        is_coupon_limit_reached = coupons.count() >= max_count
+        is_promotion_limit_reached = promotions.count() >= max_count
+
+
         return Response({
             "result": {
                 "restaurant": {
                     "uuid": str(restaurant.uuid),
                     "name": restaurant.name,
+                },
+                "merchant_status": {
+                    "role": user.role, 
+                    "is_coupon_limit_reached": is_coupon_limit_reached,
+                    "is_promotion_limit_reached": is_promotion_limit_reached,
                 },
                 "promotions": PromotionSerializer(promotions, many=True).data,
                 "coupons":MerchantCouponSerializer(coupons, many=True).data
@@ -96,3 +107,67 @@ class CouponUsageView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+class CouponDetailView(APIView):
+    @token_required_cbv
+    @check_merchant_role
+    def get(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+
+        coupon = get_object_or_404(Coupon, uuid=uuid, is_archived=False) 
+        if user.restaurant != coupon.restaurant:
+            return Response({'error': '您無權限查看此最新動態'}, status=status.HTTP_403_FORBIDDEN) 
+        serializer = CouponSerializer(coupon)
+        result = serializer.data 
+        result['total_claimed'] = UserCoupon.objects.filter(coupon=coupon).count()
+        result['total_used'] = UserCoupon.objects.filter(coupon=coupon, is_used=True).count()
+
+        return Response({'result':result}, status=status.HTTP_200_OK)
+
+    @token_required_cbv
+    def patch(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+    
+        if user.role not in ['merchant', 'vip_merchant']:
+            return Response({"error": "目前非商家帳號"}, status=status.HTTP_403_FORBIDDEN)
+
+        restaurant = user.restaurant
+        if not restaurant:
+            return Response({"error": "此商家尚未綁定餐廳"}, status=status.HTTP_400_BAD_REQUEST)
+
+        coupon = get_object_or_404(Coupon, uuid=uuid, restaurant=restaurant)
+
+        coupon.is_archived = True
+        coupon.save()
+
+        return Response({"success": True}, status=status.HTTP_200_OK)
+
+class PromotionDetailView(APIView):
+    @token_required_cbv
+    def get(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        
+        promotion = get_object_or_404(Promotion, uuid=uuid, is_archived=False) 
+        if user.restaurant != promotion.restaurant:
+            return Response({'error': '您無權限查看此最新動態'}, status=status.HTTP_403_FORBIDDEN) 
+        serializer = PromotionSerializer(promotion)
+        return Response({'result':serializer.data}, status=status.HTTP_200_OK)
+    
+    @token_required_cbv
+    def patch(self, request, uuid):
+        user = get_object_or_404(User, uuid=request.user_uuid)
+        
+        if user.role not in ['merchant', 'vip_merchant']:
+            return Response({"error": "目前非商家帳號"}, status=status.HTTP_403_FORBIDDEN)
+
+        restaurant = user.restaurant
+        if not restaurant:
+            return Response({"error": "此商家尚未綁定餐廳"}, status=status.HTTP_400_BAD_REQUEST)
+
+        promotion = get_object_or_404(Promotion, uuid=uuid, restaurant=restaurant)
+
+        promotion.is_archived = True
+        promotion.save()
+
+        return Response({"success": True}, status=status.HTTP_200_OK)
+

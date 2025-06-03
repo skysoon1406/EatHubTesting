@@ -25,22 +25,28 @@ API = {
             "website": string | null,
             "userRatingsTotal": 123
         },
-        "promotion": {
-            "title": string,
-            "description": string,
-            "startedAt": "2025-05-15T12:34:56Z",
-            "endedAt": "2025-05-15T12:34:56Z",
-            "imageUrl": string | null
-        } or null,
-        "coupon": {
-            "serialNumber": string,
-            "startedAt": "2025-05-15T12:34:56Z",
-            "endedAt": "2025-05-15T12:34:56Z",
-            "title": string,
-            "description": string,
-            "discount": string,
-            "uuid": string
-        } or null,
+        "promotion": [
+            {
+                "title": string,
+                "description": string,
+                "startedAt": "2025-05-15T12:34:56Z",
+                "endedAt": "2025-05-15T12:34:56Z",
+                "imageUrl": string | null
+            },
+            ...
+        ]or null,
+        "coupon": [
+            {
+                "serialNumber": string,
+                "startedAt": "2025-05-15T12:34:56Z",
+                "endedAt": "2025-05-15T12:34:56Z",
+                "title": string,
+                "description": string,
+                "discount": string,
+                "uuid": string
+            },
+            ...
+        ] or null,
         "reviews": [
             {
                 "user": {
@@ -57,7 +63,11 @@ API = {
         ]
         "userStatus": {
             "hasFavorited": True,
-            "hasClaimedCoupon": False,
+            "hasClaimedCoupon": {
+                "uuid": False,
+                "uuid2": True,
+                ...
+            }
             "hasReviewed": False
         }
     }
@@ -72,6 +82,7 @@ API = {
     "success": True
 }
 ```
+
 POST /api/v1/restaurants/{uuid}/favorites/
 
 ```python
@@ -79,6 +90,7 @@ API = {
     "success": True
 }
 ```
+
 DELETE /api/v1/restaurants/{uuid}/favorites/
 
 ```python
