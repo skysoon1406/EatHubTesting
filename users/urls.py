@@ -8,4 +8,7 @@ urlpatterns = [
     path('logout', views.LogoutView.as_view()),
     path('google-login/', views.GoogleLoginView.as_view()),
     path('merchant/signup/', views.MerchantSignupView.as_view()),
+    path('forgot-password/', views.ForgotPasswordView.as_view()),
+    path('reset-password/', views.ResetPasswordView.as_view()),
+    
 ]

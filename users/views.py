@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
-from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
 import uuid
 from .models import User,UserCoupon,Favorite
@@ -11,6 +11,8 @@ from .utils import token_required_cbv
 from django.shortcuts import get_object_or_404
 import requests
 from restaurants.serializers import RestaurantSerializer
+from utilities.email_util import send_email
+import os
 
 class SignupView(APIView):
     def post(self, request):
@@ -252,3 +254,62 @@ class MerchantSignupView(APIView):
                 status=status.HTTP_201_CREATED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ForgotPasswordView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        user = User.objects.get(email=email)
+        
+        # 生成重設密碼的 token
+        reset_token = str(uuid.uuid4())
+        
+        # 將 token 存入 cache，30 分鐘過期
+        cache.set(f'password_reset:{user.uuid}', reset_token, timeout=1800)
+        
+        # 構建重設密碼連結
+        frontend_domain = os.getenv('FRONTEND_DOMAIN', 'https://eathub.today')
+        reset_url = f"{frontend_domain}/reset-password?token={reset_token}&user_id={user.uuid}"
+        
+        # 發送郵件
+        subject = "EatHub - 重設密碼"
+        html = f"""
+        <html>
+        <body>
+            <h2>重設您的密碼</h2>
+            <p>親愛的 {user.user_name}，</p>
+            <p>請點擊下方連結重設密碼：</p>
+            <p><a href="{reset_url}">重設密碼</a></p>
+            <p>連結將在 30 分鐘後失效</p>
+        </body>
+        </html>
+        """
+        
+        send_email(email, subject, html)
+        
+        return Response({'message': '重設密碼郵件已發送'}, status=status.HTTP_200_OK)
+
+
+class ResetPasswordView(APIView):
+    def post(self, request):
+        token = request.data.get('token')
+        user_id = request.data.get('user_id')
+        new_password = request.data.get('new_password')
+        
+        user = User.objects.get(uuid=user_id)
+        
+        # 驗證 token
+        cache_key = f'password_reset:{user.uuid}'
+        stored_token = cache.get(cache_key)
+        
+        if stored_token == token:
+            # 更新密碼
+            user.password = make_password(new_password)
+            user.save()
+            
+            # 清除 token
+            cache.delete(cache_key)
+            
+            return Response({'message': '密碼重設成功'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': '無效的重設連結'}, status=status.HTTP_400_BAD_REQUEST)
+
