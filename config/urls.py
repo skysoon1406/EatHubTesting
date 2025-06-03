@@ -10,4 +10,5 @@ urlpatterns = [
     path('api/v1/favorites/', include('users.favorite_urls')),
     path('api/v1/user-coupons/', include('users.user_coupon_urls')),
     path('api/v1/merchants/', include('promotions.merchant_urls')),
+    path('api/v1/payments/', include('payments.urls'))
 ]
