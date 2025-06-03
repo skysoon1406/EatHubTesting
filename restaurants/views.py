@@ -141,7 +141,7 @@ class FavoriteRestaurantView(APIView):
             return Response({'success': True}, status=status.HTTP_204_NO_CONTENT)
         return Response({'success': False}, status=status.HTTP_200_OK)
 
-class RecentlyViewedRestaurantsView(APIView):
+class RecentViewedRestaurantsView(APIView):
     def get(self, request):
         uuid_list = request.query_params.getlist("uuids")
 
