@@ -75,7 +75,7 @@ class LoginView(APIView):
                         httponly=True,
                         max_age=3600,
                         secure=True,
-                        samesite='lax',
+                        samesite=None,
                     )
                     return response
                 else:
@@ -238,7 +238,7 @@ class GoogleLoginView(APIView):
             f'{user.uuid}:{token}',
             httponly=True,
             secure=True,
-            samesite='Lax',
+            samesite=None,
             max_age=3600,
         )
         return response
