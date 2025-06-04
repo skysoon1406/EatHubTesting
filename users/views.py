@@ -266,7 +266,14 @@ class MerchantSignupView(APIView):
 class ForgotPasswordView(APIView):
     def post(self, request):
         email = request.data.get('email')
-        user = User.objects.get(email=email)
+        
+        if not email:
+            return Response({'error': '請提供郵件地址'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': '找不到此郵件地址的用戶'}, status=status.HTTP_404_NOT_FOUND)
         
         # 生成重設密碼的 token
         reset_token = str(uuid.uuid4())
@@ -292,10 +299,11 @@ class ForgotPasswordView(APIView):
         </html>
         """
         
-        send_email(email, subject, html)
-        
-        return Response({'message': '重設密碼郵件已發送'}, status=status.HTTP_200_OK)
-
+        try:
+            send_email(email, subject, html)
+            return Response({'message': '重設密碼郵件已發送'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': '郵件發送失敗'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ResetPasswordView(APIView):
     def post(self, request):
