@@ -20,7 +20,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 LINEPAY_CHANNEL_ID = os.getenv('LINEPAY_CHANNEL_ID')
-LINEPAY_CHANNEL_SECRET = os.getenv('LINEPAY_CHANNEL_SECRET')
+LINEPAY_CHANNEL_SECRET_KEY = os.getenv('LINEPAY_CHANNEL_SECRET_KEY')
 LINEPAY_API_BASE_URL = os.getenv('LINEPAY_API_BASE_URL')
 PUBLIC_DOMAIN = os.getenv('PUBLIC_DOMAIN')
 
@@ -33,7 +33,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1',]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1','3cd3-61-220-182-115.ngrok-free.app']
 
 
 # Application definition

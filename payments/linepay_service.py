@@ -13,9 +13,10 @@ class LinePayService:
         self.product = product
         self.amount = payment_order.amount
         self.api_base = settings.LINEPAY_API_BASE_URL
-        self.secret = settings.LINEPAY_CHANNEL_SECRET
+        self.secret = settings.LINEPAY_CHANNEL_SECRET_KEY
         self.channel_id = settings.LINEPAY_CHANNEL_ID
         self.domain = settings.PUBLIC_DOMAIN
+        print(self.api_base, self.secret, self.channel_id, self.domain)
     # 組裝 LINE PAY 請求資料
     def build_request_payload(self):
         return {
