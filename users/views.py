@@ -80,12 +80,12 @@ class LoginView(APIView):
                     return response
                 else:
                     return Response(
-                        {'error': '密碼錯誤'},
+                        {'error': '帳號或是密碼錯誤，請重新輸入。'},
                         status=status.HTTP_401_UNAUTHORIZED,
                     )
             except User.DoesNotExist:
                 return Response(
-                    {'error': '使用者不存在'},
+                    {'error': '帳號或是密碼錯誤，請重新輸入。'},
                     status=status.HTTP_404_NOT_FOUND,
                 )
 
