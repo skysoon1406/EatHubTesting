@@ -283,7 +283,7 @@ class ForgotPasswordView(APIView):
         
         # 構建重設密碼連結
         frontend_domain = os.getenv('FRONTEND_DOMAIN', 'https://eathub.today')
-        reset_url = f"{frontend_domain}reset-password?token={reset_token}&user_id={user.uuid}"
+        reset_url = f"{frontend_domain}/reset-password?token={reset_token}&user_id={user.uuid}"
         
         # 發送郵件
         subject = "EatHub - 重設密碼"
