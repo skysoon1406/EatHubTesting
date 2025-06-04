@@ -36,7 +36,8 @@ DEBUG = os.getenv('DEBUG')
 ALLOWED_HOSTS = [
     'eathub.today',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    '0703-61-220-182-115.ngrok-free.app'
 ]
 
 
