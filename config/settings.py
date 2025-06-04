@@ -23,6 +23,7 @@ LINEPAY_CHANNEL_ID = os.getenv('LINEPAY_CHANNEL_ID')
 LINEPAY_CHANNEL_SECRET = os.getenv('LINEPAY_CHANNEL_SECRET')
 LINEPAY_API_BASE_URL = os.getenv('LINEPAY_API_BASE_URL')
 PUBLIC_DOMAIN = os.getenv('PUBLIC_DOMAIN')
+FRONTEND_DOMAIN = os.getenv("FRONTEND_DOMAIN", "http://localhost:5173")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -36,7 +37,8 @@ DEBUG = os.getenv('DEBUG')
 ALLOWED_HOSTS = [
     'eathub.today',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    '828b-61-220-182-115.ngrok-free.app'
 ]
 
 
