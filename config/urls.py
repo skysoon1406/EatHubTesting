@@ -4,7 +4,7 @@ from .views import homepage
 
 urlpatterns = [
     path('', homepage),
-    path('admin/', admin.site.urls),
+    path('5th-floor/', admin.site.urls),
     path('api/v1/auth/', include('users.urls')),
     path('api/v1/coupons/', include('promotions.coupon_urls')),
     path('api/v1/promotions/', include('promotions.promotion_urls')),
