@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include
+from .views import homepage
 
 urlpatterns = [
+    path('', homepage),
     path('admin/', admin.site.urls),
     path('api/v1/auth/', include('users.urls')),
     path('api/v1/coupons/', include('promotions.coupon_urls')),
