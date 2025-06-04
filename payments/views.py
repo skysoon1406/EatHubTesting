@@ -10,6 +10,8 @@ from .subscription_service import create_subscription_after_payment
 from .payment_flow import prepare_payment_order
 from .linepay_service import LinePayService
 from payments.serializers import ProductSerializer,PaymentOrderSerializer
+from django.http import HttpResponseRedirect
+from django.conf import settings 
 
 class ProductListView(APIView):
     @token_required_cbv
@@ -100,7 +102,8 @@ class LinePayConfirmView(APIView):
             payment_order.is_paid = True
             payment_order.transaction_id = transaction_id
             payment_order.save()
-            return Response({'message': '付款確認成功', 'transactionId': transaction_id})
+            redirect_url = f'{settings.FRONTEND_DOMAIN}/payments/success?orderId={payment_order.order_id}'
+            return HttpResponseRedirect(redirect_url)
         else:
             return Response({'error': data.get('returnMessage')}, status=status.HTTP_400_BAD_REQUEST)
 
