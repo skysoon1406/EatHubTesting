@@ -8,6 +8,11 @@ class SignupSerializer(serializers.ModelSerializer):
         model = User
         fields = ['first_name', 'last_name', 'user_name', 'email', 'password']
 
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("此信箱已被註冊")
+        return value
+
     def validate_password(self, value):
         return make_password(value)
 
@@ -67,6 +72,11 @@ class MerchantSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [ 'user_name', 'email', 'password']
+    
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("此信箱已被註冊")
+        return value
 
     def validate_password(self, value):
         return make_password(value)
