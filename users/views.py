@@ -10,9 +10,17 @@ from .serializers import SignupSerializer, LoginSerializer, UserCouponSerializer
 from .utils import token_required_cbv
 from django.shortcuts import get_object_or_404
 import requests
-from restaurants.serializers import RestaurantSerializer
+from restaurants.serializers import FullRestaurantSerializer
 from utilities.email_util import send_email
 import os
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+
+
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    return JsonResponse({'detail': 'CSRF cookie set'})
+
 
 class SignupView(APIView):
     def post(self, request):
@@ -67,7 +75,7 @@ class LoginView(APIView):
                         httponly=True,
                         max_age=3600,
                         secure=True,
-                        samesite='lax',
+                        samesite=None,
                     )
                     return response
                 else:
@@ -180,7 +188,7 @@ class FavoriteListView(APIView):
         favorites = Favorite.objects.filter(user=user).select_related('restaurant').order_by('-created_at')
         restaurants = [f.restaurant for f in favorites]
 
-        serializer = RestaurantSerializer(restaurants, many=True)
+        serializer = FullRestaurantSerializer(restaurants, many=True)
         return Response({"restaurants": serializer.data}, status=status.HTTP_200_OK)
 
 # Google登入
@@ -229,8 +237,8 @@ class GoogleLoginView(APIView):
             'auth_token',
             f'{user.uuid}:{token}',
             httponly=True,
-            secure=False,     # 本地使用 False，上線請改 True
-            samesite='Lax',
+            secure=True,
+            samesite=None,
             max_age=3600,
         )
         return response
