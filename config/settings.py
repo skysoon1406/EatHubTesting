@@ -37,7 +37,8 @@ DEBUG = os.getenv('DEBUG')
 ALLOWED_HOSTS = [
     'eathub.today',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    'a5fa-61-220-182-115.ngrok-free.app'
 ]
 
 
@@ -74,7 +75,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://eathub.today'
+    'https://eathub.today',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
