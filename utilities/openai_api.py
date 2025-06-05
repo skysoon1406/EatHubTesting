@@ -13,7 +13,6 @@ def openai_api(prompt):
     temperature=0.8,
     max_tokens=200,
     )
-    print(response.choices[0].message.content)
     return response.choices[0].message.content
 
 def find_dish(flavors, mains, staples):
