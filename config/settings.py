@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from dotenv import load_dotenv
-import os
+import os , re
+
 
 load_dotenv()
 
@@ -34,10 +35,15 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG')
 
+class RegexHost(str):
+    def __eq__(self, other):
+        return bool(re.match(self, other))
+
 ALLOWED_HOSTS = [
     'eathub.today',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    RegexHost(r'.*\.ngrok-free\.app')
 ]
 
 
@@ -74,13 +80,16 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://eathub.today'
+    'https://eathub.today',
+    os.getenv('FRONTEND_DOMAIN')
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://eathub.today',
+    'http://localhost:5173',
+    os.getenv('FRONTEND_DOMAIN'),
 ]
 
 CSRF_COOKIE_HTTPONLY = False
