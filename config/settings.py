@@ -43,7 +43,8 @@ DEBUG = os.getenv('DEBUG')
 ALLOWED_HOSTS = [
     'eathub.today',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    'eathubtesting.onrender.com',
 ]
 
 
