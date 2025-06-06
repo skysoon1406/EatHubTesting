@@ -81,13 +81,15 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://eathub.today'
+    'https://eathub.today',
+    'https://playful-sprinkles-05a4d0.netlify.app',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'https://eathub.today',
+    'https://playful-sprinkles-05a4d0.netlify.app',
 ]
 
 CSRF_COOKIE_HTTPONLY = False
