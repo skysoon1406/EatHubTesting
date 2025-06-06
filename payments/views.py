@@ -10,7 +10,7 @@ from .payment_flow import prepare_payment_order
 from .linepay_service import LinePayService
 from payments.serializers import ProductSerializer,PaymentOrderSerializer
 from payments.validators import validate_payment_request
-from .ecpay_service import ECPayService
+from .ecpay_service import ECPayService, verify_check_mac_value
 from django.shortcuts import get_object_or_404
 import logging
 from django.views.decorators.csrf import csrf_exempt
@@ -151,16 +151,15 @@ class ECPaySubscriptionCreateView(APIView):
 class ECPayConfirmView(APIView):
     def post(self, request):
         data = request.POST.dict()
-
-        sdk = ECPayPaymentSdk()
         try:
-            sdk.verify_check_mac_value(data.copy())
+            verify_check_mac_value(data)
         except Exception as e:
             return HttpResponse("0|CheckMacValue Error", status=400)
 
         try:
             merchant_trade_no = data.get("MerchantTradeNo")
-            payment_order = PaymentOrder.objects.select_related("user", "product").get(order_id=merchant_trade_no)
+            order_id = f"order_{merchant_trade_no[:8]}_{merchant_trade_no[8:]}"
+            payment_order = PaymentOrder.objects.get(order_id=order_id)
         except PaymentOrder.DoesNotExist:
             return HttpResponse("0|Order Not Found", status=404)
 

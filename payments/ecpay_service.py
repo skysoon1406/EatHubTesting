@@ -15,10 +15,9 @@ class ECPayService:
 
     def send_payment_request(self):
         trade_date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-        order_id = self.payment_order.order_id[:20]
         total_amount = self.payment_order.amount
-
-        merchant_trade_no = ''.join(filter(str.isalnum, order_id))[:20].upper()
+        order_id_parts = self.payment_order.order_id.split("_")
+        merchant_trade_no = f"{order_id_parts[1]}{order_id_parts[2]}"
 
         request_data = {
             'MerchantTradeNo': merchant_trade_no,
@@ -41,3 +40,25 @@ class ECPayService:
             'order_id': self.payment_order.order_id,
             'form_html': form_html
         }
+    
+def verify_check_mac_value(data: dict) -> None:
+    """
+    驗證 ECPay 回傳資料的 CheckMacValue 是否正確。
+    如果不正確，會 raise Exception。
+    """
+    data = data.copy()  # 避免污染原始資料
+    received_mac = data.pop('CheckMacValue', None)
+
+    if not received_mac:
+        raise Exception("缺少 CheckMacValue")
+
+    sdk = ECPayPaymentSdk(
+        MerchantID=settings.ECPAY_MERCHANT_ID,
+        HashKey=settings.ECPAY_HASH_KEY,
+        HashIV=settings.ECPAY_HASH_IV,
+    )
+
+    generated_mac = sdk.generate_check_value(data)
+
+    if received_mac != generated_mac:
+        raise Exception("CheckMacValue 驗證失敗")
